@@ -15,4 +15,4 @@ requirements = (OpSysAndVer =?= "CentOS7")
 
 transfer_output_files = ""
 +JobFlavour        = "nextweek"
-queue 
+queue 10

@@ -13,4 +13,4 @@ requirements = (OpSysAndVer =?= "CentOS7")
 
 transfer_output_files = ""
 +JobFlavour        = "testmatch"
-queue 20
+queue 10
