@@ -36,7 +36,6 @@ def customise_DigiTkOnly(process):
     del process.simMuonME0PseudoDigis
     del process.simMuonME0PseudoReDigis
     del process.simMuonGEMDigis
-    # print(process.digitisationTkOnly_step,'\n\n')
     process.mix.digitizers = cms.PSet(process.theDigitizersValid)
     del process.mix.digitizers.ecal
     del process.mix.digitizers.hcal

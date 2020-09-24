@@ -88,25 +88,17 @@ process.load('Configuration.StandardSequences.Digi_cff')
 process.load('SimGeneral.MixingModule.mix_POISSON_average_cfi')
 process.load('IOMC.EventVertexGenerators.VtxSmearedHLLHC_cfi')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
-# process.load('SimTracker.TrackTriggerAssociation.TrackTriggerAssociator_cff')
-# process.load('L1Trigger.TrackTrigger.TrackTrigger_cff')
-# process.load('RecoLocalTracker.Configuration.RecoLocalTracker_cff')
+process.load('RecoLocalTracker.Configuration.RecoLocalTracker_cff')
+process.load('SimTracker.TrackTriggerAssociation.TrackTriggerAssociator_cff')
+process.load('L1Trigger.TrackTrigger.TrackTrigger_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-# process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-# process.load('Configuration.Geometry.GeometryExtended2023D21Reco_cff')
-# process.load('Configuration.Geometry.GeometryExtended2023D21_cff')
-# process.load('Configuration.StandardSequences.SimL1Emulator_cff')
-# process.load('Configuration.StandardSequences.DigiToRaw_cff')
-# process.load('Configuration.StandardSequences.RawToDigi_cff')
-# process.load('Configuration.StandardSequences.L1Reco_cff')
-# process.load('Configuration.StandardSequences.Reconstruction_cff')
-# process.load('Configuration.StandardSequences.RecoSim_cff')
 
+#custom BRIL configs like Geometry
 process.load('BRIL_ITsim.DataProductionTkOnly.cmsExtendedGeometry2026D999XML_cff')
 # process.load('BRIL_ITsim.DataProductionTkOnly.TkOnlyDigiToRaw_cff')
 # process.load('BRIL_ITsim.DataProductionTkOnly.TkOnlyRawToDigi_cff')
-print 'Running with special BRIL Tk Only Geometry & TkOnly Digitisation'
+print 'Running with special BRIL Tk Only Geometry & TkOnly Digitisation, Clustering'
 
 from L1Trigger.TrackTrigger.TTStubAlgorithmRegister_cfi import *
 from L1Trigger.TrackTrigger.TTStub_cfi import *
@@ -127,13 +119,6 @@ process.source = cms.Source("EmptySource")
 process.options = cms.untracked.PSet(
 
 )
-
-# Production Info
-# process.configurationMetadata = cms.untracked.PSet(
-    # annotation = cms.untracked.string('step1_step2_step3 nevts:'+str(options.nEvents)),
-    # name = cms.untracked.string('Applications'),
-    # version = cms.untracked.string('$Revision: 1.19 $')
-# )
 
 # Output definition
 process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
@@ -168,10 +153,12 @@ process.RAWSIMoutput.outputCommands.append('drop  *_mix_*_*')
 process.RAWSIMoutput.outputCommands.append('keep  *_simSi*_*_*')
 process.RAWSIMoutput.outputCommands.append('drop  *_simEcal*_*_*')
 process.RAWSIMoutput.outputCommands.append('drop  *_simHcal*_*_*')
+process.RAWSIMoutput.outputCommands.append('drop  *_TkPixelCPERecord*_*_*')
+process.RAWSIMoutput.outputCommands.append('keep  *_g4SimHits_Tracker*_*')
+process.RAWSIMoutput.outputCommands.append('drop  *_g4SimHits_*_*')
 # process.RAWSIMoutput.outputCommands.append('keep  *_mix_Tracker_*')
 
 # Other statements
-# process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
@@ -208,24 +195,19 @@ process.generation_step = cms.Path(process.pgen)
 process.simulationTkOnly_step = cms.Path(process.psim)
 process.genfiltersummary_step = cms.EndPath(process.genFilterSummary)
 process.digitisationTkOnly_step = cms.Path(process.pdigi_valid)
-# process.L1TrackTrigger_step     = cms.Path(process.TrackTriggerClustersStubs)
-# process.L1TTAssociator_step     = cms.Path(process.TrackTriggerAssociatorClustersStubs)
-# process.L1simulation_step = cms.Path(process.SimL1Emulator)
+process.PixelClusterizer_step = cms.Path(process.pixeltrackerlocalreco)
+process.L1TrackTrigger_step     = cms.Path(process.TrackTriggerClustersStubs)
+process.L1TTAssociator_step     = cms.Path(process.TrackTriggerAssociatorClustersStubs)
 # process.digi2raw_step = cms.Path(process.DigiToRaw)
 # process.raw2digi_step = cms.Path(process.RawToDigi)
 # process.L1Reco_step = cms.Path(process.L1Reco)
-# process.reconstruction_step = cms.Path(process.trackerlocalreco)
 # process.recosim_step = cms.Path(process.recosim)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.RAWSIMoutput_step = cms.EndPath(process.RAWSIMoutput)
 
 # Schedule definition
 # process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulationTkOnly_step,process.digitisation_step,process.digi2raw_step,process.raw2digi_step,process.reconstruction_step,process.endjob_step,process.RAWSIMoutput_step)
-# process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulationTkOnly_step,process.digitisationTkOnly_step,process.digi2raw_step,process.raw2digi_step,process.endjob_step,process.RAWSIMoutput_step)
-process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulationTkOnly_step,process.digitisationTkOnly_step,process.endjob_step,process.RAWSIMoutput_step)
-
-# from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
-# associatePatAlgosToolsTask(process)
+process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulationTkOnly_step,process.digitisationTkOnly_step,process.PixelClusterizer_step,process.L1TrackTrigger_step,process.L1TTAssociator_step,process.endjob_step,process.RAWSIMoutput_step)
 
 #Setup FWK for multithreaded
 process.options.numberOfThreads=cms.untracked.uint32(options.nThreads)
@@ -238,12 +220,14 @@ for path in process.paths:
 #do not add changes to your config after this point (unless you know what you are doing)
 # Customisation from command line
 
-
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
 
 # Automatic addition of the customisation function
+#customisation functions to only run Tracker Digitisation and Pixel Clustering
 from BRIL_ITsim.DataProductionTkOnly.TkOnlyDigi_cff import TkOnlyDigi
 process = TkOnlyDigi(process)
+from BRIL_ITsim.DataProductionTkOnly.PixelClusterizerOnly_cff import PixelClusterizerOnly
+process = PixelClusterizerOnly(process)
 # End adding early deletion
