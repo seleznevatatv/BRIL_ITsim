@@ -1,4 +1,4 @@
-NEvents             = 15000
+NEvents             = 10000
 
 executable          = runMinBiasTkOnly.sh
 arguments           = $(NEvents) $(ProcId)

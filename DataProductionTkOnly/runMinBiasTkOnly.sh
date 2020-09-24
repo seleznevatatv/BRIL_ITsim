@@ -101,4 +101,4 @@ ${command}
 echo "Done running the generation"
 echo "Cleaning up behing me"
 rm -rf tmp/
-rm -rf CMSSW_1l_2_0_pre6/
+rm -rf CMSSW_11_2_0_pre6/
