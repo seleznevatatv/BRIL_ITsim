@@ -71,7 +71,7 @@ options.register ('outputDirectory',
                   "The output directory")
 
 options.parseArguments()
-options.outputFile=options.outputDirectory+'/step3_pixel_PU_'+str(options.pileupAverage)+'.'+str(options.jobId)+'.root'
+options.outputFile=options.outputDirectory+'/step3_pixel_PU_'+str(options.pileupAverage)+'.'+str(options.jobId)+'TkOnly.root'
 print("Output File: %s" % (options.outputFile))
 
 process = cms.Process('FULLSIM',eras.Phase2)

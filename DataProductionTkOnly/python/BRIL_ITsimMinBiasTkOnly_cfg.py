@@ -37,7 +37,7 @@ options.register ('outputDirectory',
                   "The output directory")
 
 options.parseArguments()
-options.outputFile=options.outputDirectory+'/minBias'+str(options.nEvents/1000)+'k_'+str(options.jobId)+'.root'
+options.outputFile=options.outputDirectory+'/minBias'+str(options.nEvents/1000)+'k_'+str(options.jobId)+'TkOnly.root'
 print("Output File: %s" % (options.outputFile))
 
 process = cms.Process('SIM',eras.Phase2)
@@ -61,7 +61,6 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.Generator.Pythia8CommonSettings_cfi import *
 from Configuration.Generator.Pythia8CUEP8M1Settings_cfi import *
 
-# process.load('BRIL_ITsim.DataProductionTkOnly.TkOnlyBRILGeom_cff')
 process.load('BRIL_ITsim.DataProductionTkOnly.cmsExtendedGeometry2026D999XML_cff')
 print 'Running with special BRIL Tk Only Geometry'
 

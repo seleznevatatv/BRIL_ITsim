@@ -17,8 +17,10 @@ options.maxEvents = -1 #all events
 #get and parse command line arguments
 options.parseArguments()
 
-# load the geomtry that i modified
+# load standard Geometry
 process.load('Configuration.Geometry.GeometryExtended2023D21Reco_cff')
+#custom BRIL configs like Geometry
+# process.load('BRIL_ITsim.DataProductionTkOnly.cmsExtendedGeometry2026D999XML_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 
 # initialize MessageLogger and output report

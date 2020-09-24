@@ -22,11 +22,11 @@ STAGED=$4
 ################################################################################
 ##CHANGE ME ACCORDING TO YOUR NEEDS
 ################################################################################
-NTHREADS=1
+NTHREADS=10
 
 FILE=file:
-#PUPATH=/afs/cern.ch/work/g/gauzinge/public/minBiasFiles
-PUPATH=/afs/cern.ch/work/g/gauzinge/public
+PUPATH=/afs/cern.ch/work/g/gauzinge/public/minBiasFiles
+#PUPATH=/afs/cern.ch/work/g/gauzinge/public
 
 #OUTDIR=/eos/user/g/gauzinge/PUdata
 #OUTDIR=.
@@ -46,7 +46,7 @@ MAXBUNCH=3
 ################################################################################
 
 #make the list of minbias files and remove trailing comma
-for filename in ${PUPATH}/*.root; do
+for filename in ${PUPATH}/*TkOnly.root; do
     FILENAMES+=${FILE}${filename},
 done
 PUFILE=${FILENAMES%,}
@@ -80,15 +80,6 @@ then
    return
 fi
 
-if test -z "$STAGED" 
-then
-   echo "Running unstaged"
-   STAGEDVAL=0
-else
-   echo "Running staged"
-   STAGEDVAL=1
-fi
-
 ################################################################################
 #PRINT THE ARGUMENTS SUMMARY
 ################################################################################
@@ -104,7 +95,6 @@ echo 'maxBunch : ' ${MAXBUNCH}
 echo 'PileupFiles: ' ${PUFILE}
 echo 'OutputDirectory: ' ${OUTDIR}
 echo 'Number of Threads: ' ${NTHREADS}
-echo 'Staged execution: ' ${STAGEDVAL}
 echo '###########################################################################'
 
 ################################################################################
@@ -112,98 +102,59 @@ echo '##########################################################################
 ################################################################################
 
 #Extract sandbox
-#tar -xf sandbox.tar.bz2
-##Keep track of release sandbox version
-#basedir=$PWD
-#rel=$(echo CMSSW_*)
-#arch=$(ls $rel/.SCRAM/|grep slc) || echo "Failed to determine SL release!"
-#old_release_top=$(awk -F= '/RELEASETOP/ {print $2}' $rel/.SCRAM/slc*/Environment) || echo "Failed to determine old releasetop!"
+tar -xf sandbox.tar.bz2
+#Keep track of release sandbox version
+basedir=$PWD
+rel=$(echo CMSSW_*)
+arch=$(ls $rel/.SCRAM/|grep slc) || echo "Failed to determine SL release!"
+old_release_top=$(awk -F= '/RELEASETOP/ {print $2}' $rel/.SCRAM/slc*/Environment) || echo "Failed to determine old releasetop!"
  
-## Creating new release
-## This isdone so e.g CMSSW_BASE and other variables are not hardcoded to the sandbox setting paths
-## which will not exist here
+# Creating new release
+# This isdone so e.g CMSSW_BASE and other variables are not hardcoded to the sandbox setting paths
+# which will not exist here
   
-#echo ">>> creating new release $rel"
-#mkdir tmp
-#cd tmp
-#scramv1 project -f CMSSW $rel
-#new_release_top=$(awk -F= '/RELEASETOP/ {print $2}' $rel/.SCRAM/slc*/Environment)
-#cd $rel
-#echo ">>> preparing sandbox release $rel"
+echo ">>> creating new release $rel"
+mkdir tmp
+cd tmp
+scramv1 project -f CMSSW $rel
+new_release_top=$(awk -F= '/RELEASETOP/ {print $2}' $rel/.SCRAM/slc*/Environment)
+cd $rel
+echo ">>> preparing sandbox release $rel"
   
-##for i in bin cfipython config lib module python src; do
-#for i in bin cfipython config lib python src; do
-    #rm -rf "$i"
-    #mv "$basedir/$rel/$i" .
-#done
+#for i in bin cfipython config lib module python src; do
+for i in bin cfipython config lib python src; do
+    rm -rf "$i"
+    mv "$basedir/$rel/$i" .
+done
      
-#echo ">>> fixing python paths"
-#for f in $(find -iname __init__.py); do
-   #sed -i -e "s@$old_release_top@$new_release_top@" "$f"
-#done
+echo ">>> fixing python paths"
+for f in $(find -iname __init__.py); do
+   sed -i -e "s@$old_release_top@$new_release_top@" "$f"
+done
          
-#eval $(scramv1 runtime -sh) || echo "The command 'cmsenv' failed!"
-#cd "$basedir"
-#echo "[$(date '+%F %T')] wrapper ready"
+eval $(scramv1 runtime -sh) || echo "The command 'cmsenv' failed!"
+cd "$basedir"
+echo "[$(date '+%F %T')] wrapper ready"
 
 
 ################################################################################
 ##RUN THE ACTUAL SIMULATION
 ################################################################################
 
-if [ "$STAGEDVAL" -eq "0"  ]
-then
-    echo "Running the full simulation in one step from directory ${PWD}!"
-    command="cmsRun python/BRIL_ITsimPUTkOnly_cfg.py print \
-            nEvents=${NEVENTS} \
-            pileupFile=${PUFILE} \
-            pileupAverage=${PU} \
-            bunchSpace=${BUNCHSPACING} \
-            minBunch=${MINBUNCH} \
-            maxBunch=${MAXBUNCH} \
-            nThreads=${NTHREADS} \
-            jobId=${JOBID} \
-            outputDirectory=file:${OUTDIR}"
+echo "Running the full simulation in one step from directory ${PWD}!"
+command="cmsRun python/BRIL_ITsimPUTkOnly_cfg.py print \
+        nEvents=${NEVENTS} \
+        pileupFile=${PUFILE} \
+        pileupAverage=${PU} \
+        bunchSpace=${BUNCHSPACING} \
+        minBunch=${MINBUNCH} \
+        maxBunch=${MAXBUNCH} \
+        nThreads=${NTHREADS} \
+        jobId=${JOBID} \
+        outputDirectory=file:${OUTDIR}"
 
-    echo 'Command: ' ${command}
-    ${command}
-else
-    echo "Running the full simulation in 3 steps from directory ${PWD}!"
-    step1="cmsRun BRIL_step1_cfg.py print \
-            nEvents=${NEVENTS} \
-            nThreads=${NTHREADS}"
-
-    step2="cmsRun BRIL_step2_cfg.py print \
-            nEvents=${NEVENTS} \
-            pileupFile=${PUFILE} \
-            pileupAverage=${PU} \
-            bunchSpace=${BUNCHSPACING} \
-            minBunch=${MINBUNCH} \
-            maxBunch=${MAXBUNCH} \
-            nThreads=${NTHREADS}"
-
-    step3="cmsRun BRIL_step3_cfg.py print \
-            nEvents=${NEVENTS} \
-            pileupFile=${PUFILE} \
-            pileupAverage=${PU} \
-            bunchSpace=${BUNCHSPACING} \
-            minBunch=${MINBUNCH} \
-            maxBunch=${MAXBUNCH} \
-            nThreads=${NTHREADS} \
-            jobId=${JOBID} \
-            outputDirectory=file:${OUTDIR}"
-
-    echo 'Command1: ' ${step1}
-    echo 'Command2: ' ${step2}
-    echo 'Command3: ' ${step3}
-
-    #do it!
-    ${step1}
-    ${step2}
-    rm step1.root
-    ${step3}
-    rm step2.root
-fi
+echo 'Command: ' ${command}
+${command}
 
 ################################################################################
 ##CLEANING UP BEHIND MYSELF
@@ -212,5 +163,5 @@ fi
 echo "Done running the generation"
 echo "Cleaning up behing me"
 rm -rf tmp/
-rm -rf CMSSW_10_4_0_pre2/
+rm -rf CMSSW_11_2_0_pre6/
 
