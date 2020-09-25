@@ -190,7 +190,8 @@ process.mix.maxBunch = cms.int32(options.maxBunch)
 process.mix.input.fileNames = cms.untracked.vstring(options.pileupFile)
 process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 process.mix.digitizers.pixel.SSDigitizerAlgorithm.HitDetectionMode = cms.int32(2)
-process.mix.digitizers.pixel.PixelDigitizerAlgorithmCommon.ApplyTimewalk = cms.bool(True)
+process.mix.digitizers.pixel.PixelDigitizerAlgorithm.ApplyTimewalk = cms.bool(True)
+# print(process.mix.digitizers.pixel)
 
 # Path and EndPath definitions
 process.generation_step = cms.Path(process.pgen)

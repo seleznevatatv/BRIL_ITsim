@@ -10,9 +10,7 @@ def TkOnlyDigi(process):
 
 def customise_DigiTkOnly(process):
     process.load('Configuration.StandardSequences.Digi_cff')
-    # print(process.doAllDigi)
     process.doAllDigi = cms.Sequence()
-    # print(process.doAllDigi)
     process.load('SimGeneral.MixingModule.mixObjects_cfi')
     process.digitisationTkOnly_step.remove(process.mix.mixObjects.mixCH)
     del process.simCastorDigis
