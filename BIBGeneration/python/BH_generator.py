@@ -97,7 +97,16 @@ process.output = cms.OutputModule("PoolOutputModule",
         SelectEvents = cms.vstring('generation_step')
     )
 )
+# print(process.pgen)
+# print(process.genParticles.src)
+# process.genParticles.src = cms.InputTag("generator", "generatorSmeared")
+# print(process.genParticles.src)
 
+# print(process.generatorSmeared)
+# from IOMC.EventVertexGenerators.VtxSmearedParameters_cfi import VtxSmearedCommon
+# print(VtxSmearedCommon)
+# VtxSmearedCommon.src = cms.InputTag("generator", "generatorSmeared")
+# print(VtxSmearedCommon)
 # Additional output definition
 
 # Global tal clearly depends on the release you are working on
@@ -119,8 +128,8 @@ process.generator       = process.FLUKA_generator.clone()  # FLUKA
 # process.generator       = process.MARS_generator   # MARS
 process.generator.InputFile = cms.string('/afs/cern.ch/work/g/gauzinge/public/BeamHalo/run0001_hilumi_ir5_exp_SCO001_fort.30')
 
-# Path and EndPath definitions
 
+# Path and EndPath definitions
 process.generation_step = cms.Path(process.pgen)
 process.endjob_step     = cms.Path(process.endOfProcess)
 process.out_step        = cms.EndPath(process.output)
