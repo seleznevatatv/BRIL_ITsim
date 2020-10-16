@@ -24,7 +24,8 @@ options = VarParsing ('analysis')
 # Here we have defined our own two VarParsing options 
 # add a list of strings for events to process
 options.register ('nEvents',
-                                 10,
+                                 # 1000,
+                                 -1,
                                  VarParsing.multiplicity.singleton,
                                  VarParsing.varType.int,
                   "The number of events to generate: 10")
@@ -39,13 +40,16 @@ options.register ('jobId',
                                  VarParsing.varType.int,
                   "The job Id: 0")
 options.register ('outputDirectory',
-                  'file:/afs/cern.ch/work/g/gauzinge/public/',
+                  'file:/afs/cern.ch/user/g/gauzinge/BIBSim/CMSSW_11_2_0_pre6/src/BRIL_ITsim/BIBGeneration/',
                   # 'file:/afs/cern.ch/work/g/gauzinge/public/',
                                  VarParsing.multiplicity.singleton,
                                  VarParsing.varType.string,
                   "The output directory")
 
 options.parseArguments()
+options.outputFile=options.outputDirectory+'/BeamHalo.'+str(options.jobId)+'.root'
+print("Output File: %s" % (options.outputFile))
+
 process = cms.Process('GEN', eras.Phase2) # Generation only
 
 # import of standard configurations
@@ -97,17 +101,6 @@ process.output = cms.OutputModule("PoolOutputModule",
         SelectEvents = cms.vstring('generation_step')
     )
 )
-# print(process.pgen)
-# print(process.genParticles.src)
-# process.genParticles.src = cms.InputTag("generator", "generatorSmeared")
-# print(process.genParticles.src)
-
-# print(process.generatorSmeared)
-# from IOMC.EventVertexGenerators.VtxSmearedParameters_cfi import VtxSmearedCommon
-# print(VtxSmearedCommon)
-# VtxSmearedCommon.src = cms.InputTag("generator", "generatorSmeared")
-# print(VtxSmearedCommon)
-# Additional output definition
 
 # Global tal clearly depends on the release you are working on
 # To get the correct GT, look at this page:
@@ -121,6 +114,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
 # Here we choose the input, look into MIB_generator_cfi for more infos about the inputs
  
+# process.load('BRIL_BIBGenerator.GeneratorInterface.BeamHaloGenerator.MIB_generator_cff')
 process.load('GeneratorInterface.BeamHaloGenerator.MIB_generator_cff')
 
 # process.Tracer          = cms.Service("Tracer")
