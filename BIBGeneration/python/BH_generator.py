@@ -15,7 +15,7 @@
 
 import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
-
+import os
 from Configuration.StandardSequences.Eras import eras
 
 # In the line below 'analysis' is an instance of VarParsing object 
@@ -24,8 +24,7 @@ options = VarParsing ('analysis')
 # Here we have defined our own two VarParsing options 
 # add a list of strings for events to process
 options.register ('nEvents',
-                                 # 1000,
-                                 1000,
+                                 100,
                                  VarParsing.multiplicity.singleton,
                                  VarParsing.varType.int,
                   "The number of events to generate: 10")
@@ -40,13 +39,23 @@ options.register ('jobId',
                                  VarParsing.varType.int,
                   "The job Id: 0")
 options.register ('outputDirectory',
-                  'file:/afs/cern.ch/user/g/gauzinge/BIBSim/CMSSW_11_2_0_pre6/src/BRIL_ITsim/BIBGeneration/',
+                  'file:/afs/cern.ch/work/p/pkicsiny/private/cmssw/CMSSW_11_2_0_pre6/src/BRIL_ITsim/BIBGeneration/',
                   # 'file:/afs/cern.ch/work/g/gauzinge/public/',
                                  VarParsing.multiplicity.singleton,
                                  VarParsing.varType.string,
                   "The output directory")
 
 options.parseArguments()
+
+#specify input
+inputPath = "/afs/cern.ch/work/g/gauzinge/public/BeamHalo"
+#inputPath = "/afs/cern.ch/work/p/pkicsiny/private/cmssw/CMSSW_11_2_0_pre6/src/GeneratorInterface/BeamHaloGenerator/input"
+options.inputFiles= [inputPath + "/" + f for f in os.listdir(inputPath) if f[:3] == "run"]
+
+#count number of events in all input files
+print("Number of events in input files: {}".format(sum([len(set([int(line.split()[0]) for line in open(f) if line.split()[0].isdigit()])) for f in options.inputFiles])))
+
+#specify output
 options.outputFile=options.outputDirectory+'/BeamHalo.'+str(options.jobId)+'.root'
 print("Output File: %s" % (options.outputFile))
 
@@ -71,6 +80,16 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.load('BRIL_ITsim.DataProductionTkOnly.cmsExtendedGeometry2026D999XML_cff')
 print 'Running with special BRIL Tk Only Geometry'
+
+#add message logger
+"""
+process.load("FWCore.MessageLogger.MessageLogger_cfi")
+process.MessageLogger.cerr.threshold = 'DEBUG'
+process.MessageLogger.categories.append('BH_generator')
+process.MessageLogger.cerr.INFO = cms.untracked.PSet(
+    limit=cms.untracked.int32(-1)
+)
+"""
 
 process.configurationMetadata = cms.untracked.PSet(
     version = cms.untracked.string('$Revision: 1.168.2.1 $'),
@@ -117,11 +136,12 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 # process.load('BRIL_BIBGenerator.GeneratorInterface.BeamHaloGenerator.MIB_generator_cff')
 process.load('GeneratorInterface.BeamHaloGenerator.MIB_generator_cff')
 
-# process.Tracer          = cms.Service("Tracer")
+#process.Tracer          = cms.Service("Tracer")
 process.generator       = process.FLUKA_generator.clone()  # FLUKA
 # process.generator       = process.MARS_generator   # MARS
-process.generator.InputFile = cms.string('/afs/cern.ch/work/g/gauzinge/public/BeamHalo/run0001_hilumi_ir5_exp_SCO001_fort.30')
-
+# process.generator.InputFile = cms.string(options.inputFiles)
+process.generator.FlukaFiles = cms.vstring(options.inputFiles)
+#process.generator.InputFilej = cms.vstring(" ", "/afs/cern.ch/work/g/gauzinge/public/BeamHalo/run0001_hilumi_ir5_exp_SCO001_fort.30")
 
 # Path and EndPath definitions
 process.generation_step = cms.Path(process.pgen)
@@ -132,6 +152,5 @@ process.out_step        = cms.EndPath(process.output)
 process.schedule = cms.Schedule(process.generation_step,process.endjob_step,process.out_step)
 
 # special treatment in case of production filter sequence  
-for path in process.paths:     
+for path in process.paths:
     getattr(process,path)._seq = process.generator*getattr(process,path)._seq
-
