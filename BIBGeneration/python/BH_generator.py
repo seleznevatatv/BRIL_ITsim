@@ -39,18 +39,23 @@ options.register ('jobId',
                                  VarParsing.varType.int,
                   "The job Id: 0")
 options.register ('outputDirectory',
-                  'file:/afs/cern.ch/work/p/pkicsiny/private/cmssw/CMSSW_11_2_0_pre6/src/BRIL_ITsim/BIBGeneration/',
-                  # 'file:/afs/cern.ch/work/g/gauzinge/public/',
+                  #'file:/afs/cern.ch/work/p/pkicsiny/private/cmssw/CMSSW_11_2_0_pre6/src/BRIL_ITsim/BIBGeneration/',
+                   'file:/afs/cern.ch/work/g/gauzinge/public/',
                                  VarParsing.multiplicity.singleton,
                                  VarParsing.varType.string,
                   "The output directory")
+options.register ('inputPath',
+                  #'file:/afs/cern.ch/work/p/pkicsiny/private/cmssw/CMSSW_11_2_0_pre6/src/BRIL_ITsim/BIBGeneration/',
+                   'file:/afs/cern.ch/work/g/gauzinge/public/BeamHalo',
+                                 VarParsing.multiplicity.singleton,
+                                 VarParsing.varType.string,
+                  "The FLUKA file directory")
 
 options.parseArguments()
 
 #specify input
-inputPath = "/afs/cern.ch/work/g/gauzinge/public/BeamHalo"
-#inputPath = "/afs/cern.ch/work/p/pkicsiny/private/cmssw/CMSSW_11_2_0_pre6/src/GeneratorInterface/BeamHaloGenerator/input"
-options.inputFiles= [inputPath + "/" + f for f in os.listdir(inputPath) if f[:3] == "run"]
+#inputPath = "/afs/cern.ch/work/g/gauzinge/public/BeamHalo"
+options.inputFiles= [options.inputPath + "/" + f for f in os.listdir(inputPath) if f[:3] == "run"]
 
 #count number of events in all input files
 print("Number of events in input files: {}".format(sum([len(set([int(line.split()[0]) for line in open(f) if line.split()[0].isdigit()])) for f in options.inputFiles])))
@@ -106,7 +111,6 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("EmptySource")
 
-
 # Output definition
 process.output = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
@@ -141,7 +145,6 @@ process.generator       = process.FLUKA_generator.clone()  # FLUKA
 # process.generator       = process.MARS_generator   # MARS
 # process.generator.InputFile = cms.string(options.inputFiles)
 process.generator.FlukaFiles = cms.vstring(options.inputFiles)
-#process.generator.InputFilej = cms.vstring(" ", "/afs/cern.ch/work/g/gauzinge/public/BeamHalo/run0001_hilumi_ir5_exp_SCO001_fort.30")
 
 # Path and EndPath definitions
 process.generation_step = cms.Path(process.pgen)
