@@ -13,7 +13,6 @@ def customise_DigiTkOnly(process):
     process.doAllDigi = cms.Sequence()
     process.load('SimGeneral.MixingModule.mixObjects_cfi')
     process.digitisationTkOnly_step.remove(process.mix.mixObjects.mixCH)
-    # print(process.mix.digitizers)
     del process.simCastorDigis
     #ecal
     del process.simEcalUnsuppressedDigis
