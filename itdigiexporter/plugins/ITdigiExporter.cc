@@ -37,7 +37,8 @@ Implementation:
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "Geometry/CommonDetUnit/interface/GeomDet.h"
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
+//#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
+#include "Geometry/CommonTopologies/interface/PixelGeomDetUnit.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 
 #include "DataFormats/Common/interface/DetSetVector.h"
@@ -114,6 +115,7 @@ class ITdigiExporter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         //from config file
         uint32_t m_disk;
         uint32_t m_ring;
+        bool m_hittype;
         // uint32_t m_module;
 
         //event counter
@@ -142,6 +144,7 @@ ITdigiExporter::ITdigiExporter(const edm::ParameterSet& iConfig) :
     , m_tokenDigis(consumes<edm::DetSetVector<PixelDigi>>(iConfig.getParameter<edm::InputTag>("digis"))) //adding digis variable - COB 26.02.19
     , m_disk(iConfig.getUntrackedParameter<uint32_t>("disk"))
     , m_ring(iConfig.getUntrackedParameter<uint32_t>("ring"))
+    , m_hittype(iConfig.getUntrackedParameter<bool>("hits"))
 {
     // TTree version 0: Save everything into one TTree
     // TODO: Organize data from different rings, detector parts
@@ -153,10 +156,14 @@ ITdigiExporter::ITdigiExporter(const edm::ParameterSet& iConfig) :
     m_tree->Branch("diskladder",   &m_event.diskladder);
     m_tree->Branch("ringlayer",   &m_event.ringlayer);
     m_tree->Branch("module", &m_event.module);
-    m_tree->Branch("row",    &m_event.row);
-    m_tree->Branch("column", &m_event.column);
-    m_tree->Branch("adc",    &m_event.adc);
-    m_tree->Branch("clusters",   &m_event.clusters);
+    if(m_hittype)
+    {
+        m_tree->Branch("row",    &m_event.row);
+        m_tree->Branch("column", &m_event.column);
+        m_tree->Branch("adc",    &m_event.adc);
+    }
+    else
+        m_tree->Branch("clusters",   &m_event.clusters);
 
     //now do what ever initialization is needed
     m_nevents = 0;
@@ -235,37 +242,47 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
         if(side ==2)
         {
             //only consider +z
-            for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++) {
-                this->m_event.barrel.push_back(barrel);
-                this->m_event.ringlayer.push_back(ringlayer);
-                this->m_event.diskladder.push_back(diskladder);
-                this->m_event.module.push_back(module);
-                this->m_event.row.push_back(digit->row());
-                this->m_event.column.push_back(digit->column());
-                this->m_event.adc.push_back(digit->adc());
-            }
-            //now find the DetSet for SiPixelClusters based on DetId
-            edmNew::DetSetVector<SiPixelCluster>::const_iterator theit = clusters->find(detId);
-            if (theit != clusters->end()) {
-                //now iterate the DetSet/Clusters for this DetID
-                for (edmNew::DetSet<SiPixelCluster>::const_iterator cluit = theit->begin(); cluit != theit->end(); cluit++) {
-                    std::vector<int> tmpClu;
-                    //for each cluster, get the size and push the x and y into a vector of pair
-                    int size = cluit->size();
-                    for (int i = 0; i < size; i++) {
-                        SiPixelCluster::Pixel pix = cluit->pixel(i);
-                        uint16_t x = pix.x;
-                        uint16_t y = pix.y;
-                        int tmp = x << 16 | y;
-                        tmpClu.push_back(tmp);
-                    }
-                    //now push back the vector of pair in the clusters vector
-                    this->m_event.clusters.push_back(tmpClu);
+            if(m_hittype)
+            {
+                for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++) {
+                    this->m_event.barrel.push_back(barrel);
+                    this->m_event.ringlayer.push_back(ringlayer);
+                    this->m_event.diskladder.push_back(diskladder);
+                    this->m_event.module.push_back(module);
+                    this->m_event.row.push_back(digit->row());
+                    this->m_event.column.push_back(digit->column());
+                    this->m_event.adc.push_back(digit->adc());
                 }
             }
-            else
-                continue;
+            else{
+                //now find the DetSet for SiPixelClusters based on DetId
+                edmNew::DetSetVector<SiPixelCluster>::const_iterator theit = clusters->find(detId);
+                if (theit != clusters->end()) {
+                    //now iterate the DetSet/Clusters for this DetID
+                    for (edmNew::DetSet<SiPixelCluster>::const_iterator cluit = theit->begin(); cluit != theit->end(); cluit++) {
 
+                        std::vector<int> tmpClu;
+                        //for each cluster, get the size and push the x and y into a vector of pair
+                        int size = cluit->size();
+                        for (int i = 0; i < size; i++) {
+                            SiPixelCluster::Pixel pix = cluit->pixel(i);
+                            uint16_t x = pix.x;
+                            uint16_t y = pix.y;
+                            int tmp = x << 16 | y;
+                            tmpClu.push_back(tmp);
+                        }
+                        //now push back the vector of pair in the clusters vector
+                        this->m_event.barrel.push_back(barrel);
+                        this->m_event.ringlayer.push_back(ringlayer);
+                        this->m_event.diskladder.push_back(diskladder);
+                        this->m_event.module.push_back(module);
+                        this->m_event.clusters.push_back(tmpClu);
+                    }
+                }
+                else
+                    continue;
+
+            }
         }
         else continue;
     }
