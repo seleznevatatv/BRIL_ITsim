@@ -37,8 +37,8 @@ Implementation:
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "Geometry/CommonDetUnit/interface/GeomDet.h"
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
-//#include "Geometry/CommonTopologies/interface/PixelGeomDetUnit.h"
+//#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
+#include "Geometry/CommonTopologies/interface/PixelGeomDetUnit.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 
 #include "DataFormats/Common/interface/DetSetVector.h"
@@ -66,7 +66,7 @@ Implementation:
 
 struct ITModuleEvent{
     //to be written to TTree, one ITModuleEvent per TTree entry, so one entry in the TTree per module and event
-    int event; // event number, one entry 
+    int event; // event number, one entry
     uint32_t side;  // side, one entry
     uint32_t disk;  // disk, one entry
     uint32_t ring;  // ring, one entry
@@ -74,7 +74,7 @@ struct ITModuleEvent{
     std::vector<uint32_t> row;//vector of row coordinates; all digis for this module and event
     std::vector<uint32_t> column;//same as above
     std::vector<uint32_t> adc;//same as above
-    //std::vector<std::vector<uint64_t>> clusters;//vector of clusters, each cluster is one entry in the outer vector, each cluster represented by a vector of uint64_t with row in 16 MSB, then col, then ADC, then 0xDEAD in LSB 
+    //std::vector<std::vector<uint64_t>> clusters;//vector of clusters, each cluster is one entry in the outer vector, each cluster represented by a vector of uint64_t with row in 16 MSB, then col, then ADC, then 0xDEAD in LSB
     std::vector<std::vector<int>> clusters;//vector of clusters, each cluster is one entry in the outer vector, each cluster represented by a vector of int with row in 16 MSB, then col
     std::vector<std::vector<uint32_t>> cluSimTrackId;//simTrackIds for each cluster: a vector of uin32_t for each cluster, each pixel in the clusters has one 32 bit simtrackid
     std::vector<uint32_t> cluMultiplicity;//the multiplicity of each cluster, vector for clusters
@@ -91,6 +91,30 @@ struct ITModuleEvent{
         this->clusters.clear();
         this->cluSimTrackId.clear();
         this->cluMultiplicity.clear();
+    }
+
+    void print()
+    {
+        std::cout << "Event " << this->event << " Side " << this->side << " Disk " << this->disk << " Ring " << this->ring << "Module " << this->module << std::endl;
+        //if(this->row.size() == this->column.size() == this->adc.size())
+        //{
+            std::cout << "Hits: ";
+            for (size_t i = 0; i < this->row.size(); i++) 
+            {
+                std::cout << "(" << this->row.at(i) <<","<<this->column.at(i)<<","<<this->adc.at(i)<<"), ";
+            }
+            std::cout << std::endl << std::endl;
+        //}
+        //else std::cout << "Error, vectors are not of same size!" <<std::endl;
+
+        int clucount = 0;
+        for(auto cluit : this->clusters)
+        {
+            std::cout << "cluster " << clucount << " : ";
+            for(auto hitit : cluit) std::cout << "(" << (hitit>>16) <<","<<(hitit & 0xFFFF) << ") ";
+            std::cout << std::endl;
+            clucount++;
+        }
     }
 
     void setModule(int event, unsigned int side, unsigned int disk, unsigned int ring, unsigned int module)
@@ -113,7 +137,7 @@ struct ITModuleEvent{
     {
         this->clusters.push_back(tmp_clu);
     }
-    
+
     void fillSimLinks(std::vector<uint32_t> SimTrackIds, size_t cluMultiplicity)
     {
         this->cluSimTrackId.push_back(SimTrackIds);
@@ -210,6 +234,7 @@ ITdigiExporter::~ITdigiExporter()
 void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     // Empty event container
+    // this is useful here just as a safety mesure but actually I need to do it in the beginning of each module
     this->m_event.clear();
 
     //get the digis - COB 26.02.19
@@ -253,7 +278,7 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
         // Determine whether it's barrel or endcap
         TrackerGeometry::ModuleType mType = tkGeom->getDetectorType(detId);
-        if (mType == TrackerGeometry::ModuleType::Ph2PXF && detId.subdetId() == PixelSubdetector::PixelEndcap) 
+        if (mType == TrackerGeometry::ModuleType::Ph2PXF && detId.subdetId() == PixelSubdetector::PixelEndcap)
         {
             // it's an endcap module
             // so now let's get the exact location
@@ -261,30 +286,36 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
             unsigned int disk = tTopo->pxfDisk(detId);
             if(disk > 8)
             {
+                bool thisevent = false;
                 //it's TEPX
                 unsigned int side = tTopo->pxfSide(detId);
                 unsigned int ring = tTopo->pxfBlade(detId);
                 unsigned int module = tTopo->pxfModule(detId);
 
+                //since every module is it's own entry in the tree I need to clear for every module, otherwise the vector explodes
+                this->m_event.clear();
                 // now fill the important variables for location
                 m_event.setModule(event, side, disk, ring, module);
 
+                if((event == 48 || event == 54) && (side ==2) && (disk == 11) && (ring == 4) && (module == 32))
+                    thisevent = true;
+
                 //loop over the digis for this module
-                for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++) 
+                for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++)
                 {
                     m_event.fillDigis(digit->row(), digit->column(), digit->adc());
                 }
-               
+
                 //now find the DetSet for SiPixelClusters based on DetId
                 edmNew::DetSetVector<SiPixelCluster>::const_iterator theit = clusters->find(detId);
-                if (theit != clusters->end()) 
+                if (theit != clusters->end())
                 {
                     //now get the simlink detset
                     edm::DetSetVector<PixelDigiSimLink>::const_iterator simLinkDSViter = simlinks->find(detId);
                     if(simLinkDSViter != simlinks->end())
                     {
                         //now iterate the DetSet/Clusters for this DetID
-                        for (edmNew::DetSet<SiPixelCluster>::const_iterator cluit = theit->begin(); cluit != theit->end(); cluit++) 
+                        for (edmNew::DetSet<SiPixelCluster>::const_iterator cluit = theit->begin(); cluit != theit->end(); cluit++)
                         {
                             //temporary vector to hold the individual pixels of the cluster
                             //std::vector<uint64_t> tmpClu;
@@ -313,9 +344,9 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
                                 //loop over all SimLinks for this detId and check pixel by pixel wheather there is a sim link
                                 bool found = false;
-                                for (edm::DetSet<PixelDigiSimLink>::const_iterator it = simLinkDSViter->data.begin(); it != simLinkDSViter->data.end(); it++) 
+                                for (edm::DetSet<PixelDigiSimLink>::const_iterator it = simLinkDSViter->data.begin(); it != simLinkDSViter->data.end(); it++)
                                 {
-                                    if (clusterChannel == it->channel()) 
+                                    if (clusterChannel == it->channel())
                                     {
                                         found = true;
                                         //indeed, this channel has a simLink
@@ -323,6 +354,7 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
                                         tmpSimTrackIds.push_back(it->SimTrackId());
                                     }
                                 }//end of search loop
+                                if(thisevent) std::cout << std::endl;
                                 if(found == false) std::cout << "warning, nothing found in SimLink collection for pixel " << x << " " << y << " channel " << clusterChannel << std::endl;
                             }//end of loop over all pixels in cluster
 
@@ -338,7 +370,7 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
                         }//end of cluster iteration
 
 
-                        
+
                     }//end of detID found in Sim links
                     else
                     {
@@ -352,9 +384,10 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
                     continue;
                 }
 
+                if(thisevent)m_event.print();
                 this->m_tree->Fill();
 
-             }//end of disk > 8 condition
+            }//end of disk > 8 condition
         }//end of is endcap condition
     }//end of Module loop
 
