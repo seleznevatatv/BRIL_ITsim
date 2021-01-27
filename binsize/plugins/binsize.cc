@@ -38,7 +38,8 @@ Implementation:
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "Geometry/CommonDetUnit/interface/GeomDet.h"
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
+//#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
+#include "Geometry/CommonTopologies/interface/PixelGeomDetUnit.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 
 #include "DataFormats/Common/interface/DetSetVector.h"
@@ -158,7 +159,8 @@ binsize::binsize(const edm::ParameterSet& iConfig)
     //alternatively colliding_bx / (trigger rate/orbit frequency)
     float orbits_to_sample_all_TEPX = ceil(eventRate/m_trgfrqTEPX);
     float orbits_to_sample_all_D4R1 = ceil(eventRate/m_trgfrqD4R1);
-    float orbits_in_NB4 = 16384.; //2^14
+    //float orbits_in_NB4 = 16384.; //2^14
+    float orbits_in_NB4 = 11224.; //per second
     m_nEventsTEPX = (uint32_t)floor(orbits_in_NB4/orbits_to_sample_all_TEPX);
     m_nEventsD4R1 = (uint32_t)floor(orbits_in_NB4/orbits_to_sample_all_D4R1);
 
@@ -170,7 +172,8 @@ binsize::binsize(const edm::ParameterSet& iConfig)
     std::cout << "Resulting in an Event rate of " << eventRate/1000. << " MHz " << std::endl;
     std::cout << "Number of Orbits to sample every colliding bunch in the Orbit( " << m_bxperorbit << " )" << std::endl;
     std::cout << "TEPX: " << orbits_to_sample_all_TEPX << " | D4R1: " << orbits_to_sample_all_D4R1 << std::endl;
-    std::cout << "With 16384 orbits in a NB4 this allows to sample every collding bunch N times: " << std::endl;
+    //std::cout << "With 16384 orbits in a NB4 this allows to sample every collding bunch N times: " << std::endl;
+    std::cout << "With 11224 orbits in a second this allows to sample every collding bunch N times: " << std::endl;
     std::cout << "TEPX: " << m_nEventsTEPX << " | D4R1: " << m_nEventsD4R1 << std::endl;
     std::cout << "**************************************************************************************************************************" << std::endl;
 

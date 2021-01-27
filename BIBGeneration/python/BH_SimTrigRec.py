@@ -15,7 +15,7 @@ options = VarParsing ('analysis')
 # add a list of strings for events to process
 options.register ('nEvents',
                                  # 1000,
-                                 -1,
+                                 40,
                                  VarParsing.multiplicity.singleton,
                                  VarParsing.varType.int,
                   "The number of events to generate: 10")
@@ -60,6 +60,7 @@ process.load('SimGeneral.MixingModule.mixNoPU_cfi')
 # process.load('HLTrigger.Configuration.HLT_GRun_cff')
 # process.load('Configuration.StandardSequences.RawToDigi_cff')
 # process.load('Configuration.StandardSequences.ReconstructionCosmics_cff')
+process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load('RecoLocalTracker.Configuration.RecoLocalTracker_cff')
 process.load('SimTracker.TrackTriggerAssociation.TrackTriggerAssociator_cff')
 process.load('L1Trigger.TrackTrigger.TrackTrigger_cff')
@@ -72,6 +73,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 #custom BRIL configs like Geometry
 process.load('BRIL_ITsim.DataProductionTkOnly.cmsExtendedGeometry2026D999XML_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D63Reco_cff')
 # process.load('BRIL_ITsim.DataProductionTkOnly.TkOnlyDigiToRaw_cff')
 # process.load('BRIL_ITsim.DataProductionTkOnly.TkOnlyRawToDigi_cff')
 print 'Running with special BRIL Tk Only Geometry & TkOnly Digitisation, Clustering'
@@ -161,7 +163,8 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 # Path and EndPath definitions
 process.simulation_step   = cms.Path(process.psim*process.mix)
 process.digitisationTkOnly_step = cms.Path(process.pdigi_valid)
-process.PixelClusterizer_step = cms.Path(process.pixeltrackerlocalreco)
+# process.PixelClusterizer_step = cms.Path(process.pixeltrackerlocalreco)
+process.PixelClusterizer_step = cms.Path(process.trackerlocalreco)
 process.L1TrackTrigger_step     = cms.Path(process.TrackTriggerClustersStubs)
 process.L1TTAssociator_step     = cms.Path(process.TrackTriggerAssociatorClustersStubs)
 # process.L1simulation_step = cms.Path(process.SimL1Emulator)
@@ -232,7 +235,7 @@ process = customiseEarlyDelete(process)
 #customisation functions to only run Tracker Digitisation and Pixel Clustering
 from BRIL_ITsim.DataProductionTkOnly.TkOnlyDigi_cff import TkOnlyDigi
 process = TkOnlyDigi(process)
-from BRIL_ITsim.DataProductionTkOnly.PixelClusterizerOnly_cff import PixelClusterizerOnly
-process = PixelClusterizerOnly(process)
+# from BRIL_ITsim.DataProductionTkOnly.PixelClusterizerOnly_cff import PixelClusterizerOnly
+# process = PixelClusterizerOnly(process)
 # End adding early deletion
 
