@@ -331,7 +331,7 @@ binsize::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             unsigned int ring_id = ring - 1;
             if (side == 1) {
                 //this is a TEPX- hit on side1
-                hist_id = disk - 9;
+                hist_id = 12 - disk;
             } else if (side == 2) {
                 //this is a TEPX+ hit on side 2
                 hist_id = 4 + disk - 9;
