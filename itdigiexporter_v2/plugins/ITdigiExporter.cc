@@ -98,12 +98,12 @@ struct ITModuleEvent{
         std::cout << "Event " << this->event << " Side " << this->side << " Disk " << this->disk << " Ring " << this->ring << "Module " << this->module << std::endl;
         //if(this->row.size() == this->column.size() == this->adc.size())
         //{
-            std::cout << "Hits: ";
-            for (size_t i = 0; i < this->row.size(); i++) 
-            {
-                std::cout << "(" << this->row.at(i) <<","<<this->column.at(i)<<","<<this->adc.at(i)<<"), ";
-            }
-            std::cout << std::endl << std::endl;
+        std::cout << "Hits: ";
+        for (size_t i = 0; i < this->row.size(); i++)
+        {
+            std::cout << "(" << this->row.at(i) <<","<<this->column.at(i)<<","<<this->adc.at(i)<<"), ";
+        }
+        std::cout << std::endl << std::endl;
         //}
         //else std::cout << "Error, vectors are not of same size!" <<std::endl;
 
@@ -115,6 +115,15 @@ struct ITModuleEvent{
             std::cout << std::endl;
             clucount++;
         }
+    }
+
+    void print2()
+    {
+        int clusterpixelcount = 0;
+        for(auto cluster : this->clusters)
+            clusterpixelcount += cluster.size();
+
+        std::cout << "Digi size: " << this->row.size() << " | " << this->column.size() << " ---  Cluster size " << clusterpixelcount << std::endl;
     }
 
     void setModule(int event, unsigned int side, unsigned int disk, unsigned int ring, unsigned int module)
@@ -177,6 +186,12 @@ class ITdigiExporter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         //event counter
         uint32_t m_nevents;
 
+        //internal debug flag
+        bool m_debug;
+        int modulecounter;
+        int toomanycounter;
+        int toofewcounter;
+
         // File service to write ROOT output
 
         edm::Service<TFileService> m_fileservice;
@@ -217,6 +232,10 @@ ITdigiExporter::ITdigiExporter(const edm::ParameterSet& iConfig) :
 
     //now do what ever initialization is needed
     m_nevents = 0;
+    m_debug = true;
+    modulecounter = 0;
+    toomanycounter = 0;
+    toofewcounter = 0;
 }
 
 ITdigiExporter::~ITdigiExporter()
@@ -297,19 +316,30 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
                 // now fill the important variables for location
                 m_event.setModule(event, side, disk, ring, module);
 
-                if((event == 48 || event == 54) && (side ==2) && (disk == 11) && (ring == 4) && (module == 32))
-                    thisevent = true;
+                //introduce some counters for the size of the digi collection for this module and the total number of pixels in the clusters
+                int nDigis=0;
+                int nClusterPixels=0;
+                int nClusters = 0;
+                modulecounter++;
+
+                //if((event == 48 || event == 54) && (side ==2) && (disk == 11) && (ring == 4) && (module == 32))
+                //thisevent = true;
 
                 //loop over the digis for this module
                 for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++)
                 {
                     m_event.fillDigis(digit->row(), digit->column(), digit->adc());
                 }
+                //append the det set vector iterator size
+                nDigis += DSVit->size();
 
                 //now find the DetSet for SiPixelClusters based on DetId
                 edmNew::DetSetVector<SiPixelCluster>::const_iterator theit = clusters->find(detId);
                 if (theit != clusters->end())
                 {
+                    //increment the cluster counter by the size of the DetSetVector size
+                    nClusters += theit->size();
+
                     //now get the simlink detset
                     edm::DetSetVector<PixelDigiSimLink>::const_iterator simLinkDSViter = simlinks->find(detId);
                     if(simLinkDSViter != simlinks->end())
@@ -327,6 +357,7 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
                             //for each cluster, get the size and push the x and y into a vector of pair
                             int size = cluit->size();
+                            nClusterPixels += size;
                             //if(size ==1) std::cout << "Single Pixel Cluster" << std::endl;
 
                             for (int i = 0; i < size; i++) {
@@ -387,6 +418,20 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
                 if(thisevent)m_event.print();
                 this->m_tree->Fill();
 
+                //print some debug information
+                if(nDigis != nClusterPixels)
+                {
+                    std::cout << "DEBUG: Evnet "<<event << " Side " << side << " Disk " << disk << " Ring " << ring << " Module " << module << " --- Digis: "<<nDigis << " | Pixels in Clusters: " << nClusterPixels << " --- nClusters: " << nClusters << std::endl;
+                    this->m_event.print2();
+                    if(nClusterPixels > nDigis)
+                    {
+                        toomanycounter++;
+                    }
+                    else
+                        toofewcounter++;
+
+                }
+
             }//end of disk > 8 condition
         }//end of is endcap condition
     }//end of Module loop
@@ -404,6 +449,7 @@ void ITdigiExporter::beginJob()
 void ITdigiExporter::endJob()
 {
     //this->m_tree->Write();
+    std::cout << "Processed "<< m_nevents << " events with " << modulecounter << " modules (total) of which " << toomanycounter << " having more pixels in clusters than in the digis and " << toofewcounter << " having more digis than pixels in clusters" << std::endl;
 
 }
 

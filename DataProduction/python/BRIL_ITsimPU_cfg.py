@@ -25,7 +25,7 @@ options.register ('nEvents',
                                  VarParsing.varType.int,
                   "The number of events to simulate: 10")
 options.register ('pileupFile',
-                                 'file:/afs/cern.ch/work/g/gauzinge/public/minBias300k.root',
+                                 'file:/afs/cern.ch/work/g/gauzinge/public/minBiasFiles/minBias0k_0.root',
                                  VarParsing.multiplicity.list,
                                  VarParsing.varType.string,
                                  "File with Minimum Bias events to use as PU overlay")
@@ -83,8 +83,8 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 # process.load('SimGeneral.MixingModule.mixNoPU_cfi')
 process.load('SimGeneral.MixingModule.mix_POISSON_average_cfi')
-process.load('Configuration.Geometry.GeometryExtended2023D21Reco_cff')
-process.load('Configuration.Geometry.GeometryExtended2023D21_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D63Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D63_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
 process.load('Configuration.StandardSequences.Digi_cff')
@@ -140,7 +140,7 @@ process.FEVTDEBUGoutput = cms.OutputModule("PoolOutputModule",
 
 # Additional output definition
 # include the filtering step
-process.FEVTDEBUGoutput.outputCommands.append('drop  *')
+# process.FEVTDEBUGoutput.outputCommands.append('drop  *')
 process.FEVTDEBUGoutput.outputCommands.append('keep  *_g4SimHits__*')
 # process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelEndcapHighTof_*')
 # process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelEndcapLowTof_*')
@@ -197,7 +197,15 @@ process.endjob_step = cms.EndPath(process.endOfProcess)
 process.FEVTDEBUGoutput_step = cms.EndPath(process.FEVTDEBUGoutput)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulation_step,process.digitisation_step,process.digi2raw_step,process.raw2digi_step,process.reconstruction_step,process.endjob_step,process.FEVTDEBUGoutput_step)
+process.schedule = cms.Schedule(process.generation_step,
+                                process.genfiltersummary_step,
+                                process.simulation_step,
+                                process.digitisation_step,
+                                process.digi2raw_step,
+                                process.raw2digi_step,
+                                process.reconstruction_step,
+                                process.endjob_step,
+                                process.FEVTDEBUGoutput_step)
 
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)

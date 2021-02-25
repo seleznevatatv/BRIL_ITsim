@@ -13,8 +13,8 @@ options = VarParsing.VarParsing('analysis')
 # Read file list
 # files = [ "root://cms-xrd-global.cern.ch///" + x for x in np.loadtxt("NuGun_D41PU200.txt",dtype=str) ]
 # options.inputFiles = files
-options.inputFiles = 'file:/eos/cms/store/group/dpg_bril/comm_bril/phase2-sim/tkOnly/step3_pixel_PU_200.0.2TkOnly.root'
-
+# options.inputFiles = 'file:/eos/cms/store/group/dpg_bril/comm_bril/phase2-sim/tkOnly/tkOnly_wOTlatched_wITtimewalk/step3_pixel_PU_200.0.2TkOnly.root'
+options.inputFiles = 'file:/eos/cms/store/group/dpg_bril/comm_bril/phase2-sim/tkOnly/tkOnly_wOTlatched_wITtimewalk/step3_pixel_PU_0.5.1TkOnly.root'
 
 options.maxEvents = 1000 #all events
 
@@ -57,5 +57,5 @@ process.BRIL_IT_Analysis = cms.EDAnalyzer('ITdigiExporter',
                                          )
 
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("file:/eos/user/g/gauzinge/PUdata/itdata_PU200_1.root") )
+process.TFileService = cms.Service("TFileService", fileName = cms.string("file:/afs/cern.ch/user/g/gauzinge/itdata_PU0.5.1.root") )
 process.p = cms.Path(process.BRIL_IT_Analysis)

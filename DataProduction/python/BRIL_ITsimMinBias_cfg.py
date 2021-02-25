@@ -15,7 +15,7 @@ options = VarParsing ('analysis')
 # Here we have defined our own two VarParsing options 
 # add a list of strings for events to process
 options.register ('nEvents',
-                                 10,
+                                 100,
                                  VarParsing.multiplicity.singleton,
                                  VarParsing.varType.int,
                   "The number of events to simulate: 10")
@@ -47,8 +47,8 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.Geometry.GeometryExtended2023D21Reco_cff')
-process.load('Configuration.Geometry.GeometryExtended2023D21_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D63Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D63_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
 process.load('IOMC.EventVertexGenerators.VtxSmearedHLLHC14TeV_cfi')
@@ -151,7 +151,12 @@ process.endjob_step = cms.EndPath(process.endOfProcess)
 process.FEVTDEBUGoutput_step = cms.EndPath(process.FEVTDEBUGoutput)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulation_step,process.endjob_step,process.FEVTDEBUGoutput_step)
+process.schedule = cms.Schedule(process.generation_step,
+                                process.genfiltersummary_step,
+                                process.simulation_step,
+                                process.endjob_step,
+                                process.FEVTDEBUGoutput_step)
+
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 

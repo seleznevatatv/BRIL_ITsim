@@ -15,7 +15,7 @@ options = VarParsing ('analysis')
 # Here we have defined our own two VarParsing options 
 # add a list of strings for events to process
 options.register ('nEvents',
-                                 10,
+                                 20,
                                  VarParsing.multiplicity.singleton,
                                  VarParsing.varType.int,
                   "The number of events to simulate: 10")

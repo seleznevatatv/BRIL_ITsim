@@ -45,15 +45,24 @@ def customise_DigiTkOnly(process):
     del process.mix.digitizers.hgchebackDigitizer
     del process.mix.digitizers.hgchefrontDigitizer
     del process.mix.digitizers.fastTimingLayer
-    # print(process.mix.digitizers)
-    process.digitisationTkOnly_step.remove(process.mix.digitizers.pixel)
-    process.load('SimTracker.SiPhase2Digitizer.phase2TrackerDigitizer_cfi')
-    process.mix.digitizers.pixel=process.phase2TrackerDigitizer
-    process.mix.digitizers.strip.ROUList = cms.vstring("g4SimHitsTrackerHitsPixelBarrelLowTof",
-                         'g4SimHitsTrackerHitsPixelEndcapLowTof')
+    process.mix.digitizers.pixel.SSDigitizerAlgorithm.HitDetectionMode = cms.int32(2)
+    process.mix.digitizers.pixel.PixelDigitizerAlgorithm.ApplyTimewalk = cms.bool(True)
+
+    # {
+    # process.digitisationTkOnly_step.remove(process.mix.digitizers.pixel)
+    # process.load('SimTracker.SiPhase2Digitizer.phase2TrackerDigitizer_cfi')
+    # process.mix.digitizers.pixel=process.phase2TrackerDigitizer
+    # process.mix.digitizers.strip.ROUList = cms.vstring("g4SimHitsTrackerHitsPixelBarrelLowTof",
+                         # 'g4SimHitsTrackerHitsPixelEndcapLowTof')
+    # print(process.mix.digitizers.pixel)
+    # }
+
+
     #Check if mergedtruth is in the sequence first, could be taken out depending on cmsDriver options
     if hasattr(process.mix.digitizers,"mergedtruth") :
         process.mix.digitizers.mergedtruth.simHitCollections.muon = cms.VInputTag( )
+
+        # {
         # process.mix.digitizers.mergedtruth.simHitCollections.tracker.remove( cms.InputTag("g4SimHits","TrackerHitsTIBLowTof"))
         # process.mix.digitizers.mergedtruth.simHitCollections.tracker.remove( cms.InputTag("g4SimHits","TrackerHitsTIBHighTof"))
         # process.mix.digitizers.mergedtruth.simHitCollections.tracker.remove( cms.InputTag("g4SimHits","TrackerHitsTOBLowTof"))
@@ -62,6 +71,7 @@ def customise_DigiTkOnly(process):
         # process.mix.digitizers.mergedtruth.simHitCollections.tracker.remove( cms.InputTag("g4SimHits","TrackerHitsTECHighTof"))
         # process.mix.digitizers.mergedtruth.simHitCollections.tracker.remove( cms.InputTag("g4SimHits","TrackerHitsTIDLowTof"))
         # process.mix.digitizers.mergedtruth.simHitCollections.tracker.remove( cms.InputTag("g4SimHits","TrackerHitsTIDHighTof"))
+        # }
 
     # keep new digis
     alist=['FEVTDEBUG','FEVTDEBUGHLT','FEVT']
