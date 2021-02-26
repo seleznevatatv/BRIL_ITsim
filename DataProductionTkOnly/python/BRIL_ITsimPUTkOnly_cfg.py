@@ -90,6 +90,8 @@ process.load('SimGeneral.MixingModule.mix_POISSON_average_cfi')
 # process.load("SimGeneral.MixingModule.trackingTruthProducerSelection_cfi")
 process.load('IOMC.EventVertexGenerators.VtxSmearedHLLHC_cfi')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
+process.load('Configuration.StandardSequences.DigiToRaw_cff')
+process.load('Configuration.StandardSequences.RawToDigi_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load('RecoLocalTracker.Configuration.RecoLocalTracker_cff')
 process.load('SimTracker.TrackTriggerAssociation.TrackTriggerAssociator_cff')
@@ -125,12 +127,12 @@ process.options = cms.untracked.PSet(
 )
 
 # Output definition
-process.FEVTDEBUGoutpug = cms.OutputModule("PoolOutputModule",
+process.FEVTDEBUGoutput = cms.OutputModule("PoolOutputModule",
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring('generation_step')
     ),
     dataset = cms.untracked.PSet(
-        dataTier = cms.untracked.string('GEN-SIM-DIGI'),
+        dataTier = cms.untracked.string('GEN-SIM-DIGI-RAW-RECO'),
         filterName = cms.untracked.string('')
     ),
     fileName = cms.untracked.string(options.outputFile),
@@ -141,16 +143,30 @@ process.FEVTDEBUGoutpug = cms.OutputModule("PoolOutputModule",
 
 # Additional output definition
 # include the filtering step
-process.FEVTDEBUGoutpug.outputCommands.append('keep  *')
-process.FEVTDEBUGoutpug.outputCommands.append('keep  *_g4SimHits__*')
-process.FEVTDEBUGoutpug.outputCommands.append('keep  *_simSiPixelDigis_Pixel_*')
-process.FEVTDEBUGoutpug.outputCommands.append('keep  *_siPixelClusters_*_*')
-process.FEVTDEBUGoutpug.outputCommands.append('drop  PCaloHits_*_*_*')
-process.FEVTDEBUGoutpug.outputCommands.append('drop  *_mix_*_*')
-process.FEVTDEBUGoutpug.outputCommands.append('keep  *_simSi*_*_*')
-process.FEVTDEBUGoutpug.outputCommands.append('drop  *_simEcal*_*_*')
-process.FEVTDEBUGoutpug.outputCommands.append('drop  *_simHcal*_*_*')
-# process.FEVTDEBUGoutpug.outputCommands.append('drop  *_TkPixelCPERecord*_*_*')
+# process.FEVTDEBUGoutput.outputCommands.append('keep  *')
+# process.FEVTDEBUGoutput.outputCommands.append('keep  *_g4SimHits__*')
+# process.FEVTDEBUGoutput.outputCommands.append('keep  *_simSiPixelDigis_*_*')
+# process.FEVTDEBUGoutput.outputCommands.append('keep  *_siPixelClusters_*_*')
+# process.FEVTDEBUGoutput.outputCommands.append('keep  *_siPixelRecHits_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('drop  PCaloHits_*_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('drop  *_mix_*_*')
+# process.FEVTDEBUGoutput.outputCommands.append('keep  *_simSi*_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('drop  *_simEcal*_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('drop  *_simHcal*_*_*')
+# process.FEVTDEBUGoutput.outputCommands.append('drop  *_TkPixelCPERecord*_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_g4SimHits__*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelEndcapHighTof_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelEndcapLowTof_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelBarrelHighTof_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelBarrelLowTof_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_simSiPixelDigis_Pixel_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_siPixelClusters_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_siPixelRecHits_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_SiPixelRecHits_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_simSiPixelRecHits_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_*Pixel*_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_Pixel_*')
+process.FEVTDEBUGoutput.outputCommands.append('drop  *_mix_Pixel_*')
 
 # Other statements
 
@@ -174,6 +190,7 @@ process.generator = cms.EDProducer("FlatRandomEGunProducer",
     psethack = cms.string('single Nu E 10')
 )
 
+
 # mixing module
 process.mix.input.nbPileupEvents.averageNumber = cms.double(options.pileupAverage)
 process.mix.bunchspace = cms.int32(options.bunchSpace)
@@ -189,11 +206,13 @@ process.generation_step = cms.Path(process.pgen)
 process.simulationTkOnly_step = cms.Path(process.psim)
 process.genfiltersummary_step = cms.EndPath(process.genFilterSummary)
 process.digitisationTkOnly_step = cms.Path(process.pdigi_valid)
+# process.digi2raw_step = cms.Path(process.siPixelRawData)
+# process.raw2digi_step = cms.Path(process.RawToDigi_pixelOnly)
 process.PixelClusterizer_step = cms.Path(process.pixeltrackerlocalreco)
 process.L1TrackTrigger_step     = cms.Path(process.TrackTriggerClustersStubs)
 process.L1TTAssociator_step     = cms.Path(process.TrackTriggerAssociatorClustersStubs)
 process.endjob_step = cms.EndPath(process.endOfProcess)
-process.FEVTDEBUGoutpug_step = cms.EndPath(process.FEVTDEBUGoutpug)
+process.FEVTDEBUGoutput_step = cms.EndPath(process.FEVTDEBUGoutput)
 
 # process.digi2raw_step = cms.Path(process.DigiToRaw)
 # process.raw2digi_step = cms.Path(process.RawToDigi)
@@ -201,16 +220,20 @@ process.FEVTDEBUGoutpug_step = cms.EndPath(process.FEVTDEBUGoutpug)
 # process.recosim_step = cms.Path(process.recosim)
 # process.PixelClusterizer_step = cms.Path(process.trackerlocalreco)
 
+# print(process.digi2raw_step)
+
 # Schedule definition
 process.schedule = cms.Schedule(process.generation_step,
-                                process.genfiltersummary_step,
+                                # process.genfiltersummary_step,
                                 process.simulationTkOnly_step,
                                 process.digitisationTkOnly_step,
+                                # process.digi2raw_step,
+                                # process.raw2digi_step,
                                 process.PixelClusterizer_step,
-                                process.L1TrackTrigger_step,
-                                process.L1TTAssociator_step,
+                                # process.L1TrackTrigger_step,
+                                # process.L1TTAssociator_step,
                                 process.endjob_step,
-                                process.FEVTDEBUGoutpug_step)
+                                process.FEVTDEBUGoutput_step)
 
 #Setup FWK for multithreaded
 process.options.numberOfThreads=cms.untracked.uint32(options.nThreads)
@@ -231,6 +254,6 @@ process = customiseEarlyDelete(process)
 #customisation functions to only run Tracker Digitisation and Pixel Clustering
 from BRIL_ITsim.DataProductionTkOnly.TkOnlyDigi_cff import TkOnlyDigi
 process = TkOnlyDigi(process)
-from BRIL_ITsim.DataProductionTkOnly.PixelClusterizerOnly_cff import PixelClusterizerOnly
-process = PixelClusterizerOnly(process)
+# from BRIL_ITsim.DataProductionTkOnly.PixelClusterizerOnly_cff import PixelClusterizerOnly
+# process = PixelClusterizerOnly(process)
 # End adding early deletion

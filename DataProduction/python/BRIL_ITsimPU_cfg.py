@@ -55,7 +55,7 @@ options.register ('maxBunch',
                                  # VarParsing.varType.string,
                   # "The Event content string: FEVTDEBUG")
 options.register ('nThreads',
-                                 1,
+                                 2,
                                  VarParsing.multiplicity.singleton,
                                  VarParsing.varType.int,
                   "The number of threads to use: 1")
@@ -65,7 +65,7 @@ options.register ('jobId',
                                  VarParsing.varType.int,
                   "The job Id: 0")
 options.register ('outputDirectory',
-                  'file:/eos/user/g/gauzinge/PUdata',
+                  'file:/afs/cern.ch/user/g/gauzinge/BIBSim/CMSSW_11_2_0_pre6/src/BRIL_ITsim',
                                  VarParsing.multiplicity.singleton,
                                  VarParsing.varType.string,
                   "The output directory")
@@ -91,12 +91,13 @@ process.load('Configuration.StandardSequences.Digi_cff')
 process.load('IOMC.EventVertexGenerators.VtxSmearedHLLHC_cfi')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
 process.load('Configuration.StandardSequences.SimIdeal_cff')
-# process.load('Configuration.StandardSequences.SimL1Emulator_cff')
+process.load('Configuration.StandardSequences.SimL1Emulator_cff')
 process.load('Configuration.StandardSequences.DigiToRaw_cff')
 process.load('Configuration.StandardSequences.RawToDigi_cff')
-# process.load('Configuration.StandardSequences.L1Reco_cff')
+process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
-# process.load('Configuration.StandardSequences.RecoSim_cff')
+process.load('RecoLocalTracker.Configuration.RecoLocalTracker_cff')
+process.load('Configuration.StandardSequences.RecoSim_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
@@ -114,7 +115,7 @@ process.source = cms.Source("EmptySource")
 
 # process options
 process.options = cms.untracked.PSet(
-
+    SkipEvent = cms.untracked.vstring('ProductNotFound')
 )
 
 # Production Info
@@ -140,14 +141,28 @@ process.FEVTDEBUGoutput = cms.OutputModule("PoolOutputModule",
 
 # Additional output definition
 # include the filtering step
-# process.FEVTDEBUGoutput.outputCommands.append('drop  *')
+process.FEVTDEBUGoutput.outputCommands.append('drop  *')
 process.FEVTDEBUGoutput.outputCommands.append('keep  *_g4SimHits__*')
-# process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelEndcapHighTof_*')
-# process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelEndcapLowTof_*')
-# process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelBarrelHighTof_*')
-# process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelBarrelLowTof_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelEndcapHighTof_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelEndcapLowTof_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelBarrelHighTof_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_TrackerHitsPixelBarrelLowTof_*')
 process.FEVTDEBUGoutput.outputCommands.append('keep  *_simSiPixelDigis_Pixel_*')
 process.FEVTDEBUGoutput.outputCommands.append('keep  *_siPixelClusters_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_siPixelRecHits_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_SiPixelRecHits_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_simSiPixelRecHits_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_*Pixel*_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('keep  *_*_Pixel_*')
+process.FEVTDEBUGoutput.outputCommands.append('drop  *_mix_Pixel_*')
+# process.FEVTDEBUGoutput.outputCommands.append('keep  *')
+process.FEVTDEBUGoutput.outputCommands.append('drop  *_simGmtStage2Digis_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('drop  *_simGtStage2Digis_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('drop  *_gmtStage2Digis_*_*')
+process.FEVTDEBUGoutput.outputCommands.append('drop  *_gtStage2Digis_*_*')
+
+# process.FEVTDEBUGoutput.outputCommands.append('drop  *_*_*')
+print(process.FEVTDEBUGoutput.outputCommands)
 
 # Other statements
 process.genstepfilter.triggerConditions=cms.vstring("generation_step")
@@ -181,29 +196,36 @@ process.mix.maxBunch = cms.int32(options.maxBunch)
 # process.mix.input.fileNames = cms.untracked.vstring([options.pileupFile])
 process.mix.input.fileNames = cms.untracked.vstring(options.pileupFile)
 process.mix.digitizers = cms.PSet(process.theDigitizersValid)
+process.mix.digitizers.pixel.SSDigitizerAlgorithm.HitDetectionMode = cms.int32(2)
+process.mix.digitizers.pixel.PixelDigitizerAlgorithm.ApplyTimewalk = cms.bool(True)
 
 # Path and EndPath definitions
 process.generation_step = cms.Path(process.pgen)
 process.simulation_step = cms.Path(process.psim)
-process.genfiltersummary_step = cms.EndPath(process.genFilterSummary)
+# process.genfiltersummary_step = cms.EndPath(process.genFilterSummary)
 process.digitisation_step = cms.Path(process.pdigi_valid)
 # process.L1simulation_step = cms.Path(process.SimL1Emulator)
-process.digi2raw_step = cms.Path(process.DigiToRaw)
-process.raw2digi_step = cms.Path(process.RawToDigi)
+process.digi2raw_step = cms.Path(process.siPixelRawData)#*process.SiStripDigiToRaw)
+process.raw2digi_step = cms.Path(process.RawToDigi_pixelOnly)
 # process.L1Reco_step = cms.Path(process.L1Reco)
-process.reconstruction_step = cms.Path(process.reconstruction)
+process.reconstruction_step = cms.Path(process.pixeltrackerlocalreco)
+# process.reconstruction_step = cms.Path(process.trackerlocalreco)
 # process.recosim_step = cms.Path(process.recosim)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.FEVTDEBUGoutput_step = cms.EndPath(process.FEVTDEBUGoutput)
 
+
 # Schedule definition
 process.schedule = cms.Schedule(process.generation_step,
-                                process.genfiltersummary_step,
+                                # process.genfiltersummary_step,
                                 process.simulation_step,
                                 process.digitisation_step,
+                                # process.L1simulation_step,
                                 process.digi2raw_step,
                                 process.raw2digi_step,
                                 process.reconstruction_step,
+                                # process.L1Reco_step,
+                                # process.recosim_step,
                                 process.endjob_step,
                                 process.FEVTDEBUGoutput_step)
 

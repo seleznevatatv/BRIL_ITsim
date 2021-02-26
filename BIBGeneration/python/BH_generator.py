@@ -46,7 +46,7 @@ options.register ('outputDirectory',
                   "The output directory")
 options.register ('inputPath',
                   #'file:/afs/cern.ch/work/p/pkicsiny/private/cmssw/CMSSW_11_2_0_pre6/src/BRIL_ITsim/BIBGeneration/',
-                   'file:/afs/cern.ch/work/g/gauzinge/public/BeamHalo',
+                   'file:/afs/cern.ch/work/g/gauzinge/public/BeamHalo/',
                                  VarParsing.multiplicity.singleton,
                                  VarParsing.varType.string,
                   "The FLUKA file directory")
@@ -54,8 +54,8 @@ options.register ('inputPath',
 options.parseArguments()
 
 #specify input
-#inputPath = "/afs/cern.ch/work/g/gauzinge/public/BeamHalo"
-options.inputFiles= [options.inputPath + "/" + f for f in os.listdir(inputPath) if f[:3] == "run"]
+# inputPath = "/afs/cern.ch/work/g/gauzinge/public/BeamHalo"
+options.inputFiles= [options.inputPath + "/" + f for f in os.listdir(options.inputPath) if f[:3] == "run"]
 
 #count number of events in all input files
 print("Number of events in input files: {}".format(sum([len(set([int(line.split()[0]) for line in open(f) if line.split()[0].isdigit()])) for f in options.inputFiles])))
@@ -73,7 +73,7 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
 # process.load('Configuration.Geometry.GeometryExtended2023D21Reco_cff')
-# process.load('Configuration.Geometry.GeometryExtended2023D21_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D63_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
 # process.load('IOMC.EventVertexGenerators.VtxSmearedHLLHC14TeV_cfi')
@@ -83,8 +83,8 @@ process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
-process.load('BRIL_ITsim.DataProductionTkOnly.cmsExtendedGeometry2026D999XML_cff')
-print 'Running with special BRIL Tk Only Geometry'
+# process.load('BRIL_ITsim.DataProductionTkOnly.cmsExtendedGeometry2026D999XML_cff')
+# print 'Running with special BRIL Tk Only Geometry'
 
 #add message logger
 """

@@ -15,7 +15,7 @@ options = VarParsing ('analysis')
 # add a list of strings for events to process
 options.register ('nEvents',
                                  # 1000,
-                                 40,
+                                 10,
                                  VarParsing.multiplicity.singleton,
                                  VarParsing.varType.int,
                   "The number of events to generate: 10")
@@ -51,35 +51,59 @@ process = cms.Process('FULLSIM', eras.Phase2)
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
-process.load('Configuration.StandardSequences.MagneticField_cff')
-process.load('Configuration.StandardSequences.SimIdeal_cff')
-process.load('Configuration.StandardSequences.Digi_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
+# process.load('SimGeneral.MixingModule.mix_POISSON_average_cfi')
+process.load('Configuration.Geometry.GeometryExtended2026D63Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2026D63_cff')
+process.load('Configuration.StandardSequences.MagneticField_cff')
+# process.load('Configuration.StandardSequences.Generator_cff')
+process.load('Configuration.StandardSequences.Digi_cff')
+# process.load('IOMC.EventVertexGenerators.VtxSmearedHLLHC_cfi')
+# process.load('GeneratorInterface.Core.genFilterSummary_cff')
+process.load('Configuration.StandardSequences.SimIdeal_cff')
+process.load('Configuration.StandardSequences.SimL1Emulator_cff')
+process.load('Configuration.StandardSequences.DigiToRaw_cff')
+process.load('Configuration.StandardSequences.RawToDigi_cff')
+process.load('Configuration.StandardSequences.L1Reco_cff')
+process.load('Configuration.StandardSequences.Reconstruction_cff')
+process.load('RecoLocalTracker.Configuration.RecoLocalTracker_cff')
+process.load('Configuration.StandardSequences.RecoSim_cff')
+process.load('Configuration.StandardSequences.EndOfProcess_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+
+# import of standard configurations
+# process.load('Configuration.StandardSequences.Services_cff')
+# process.load('FWCore.MessageService.MessageLogger_cfi')
+# process.load('Configuration.EventContent.EventContent_cff')
+# process.load('Configuration.StandardSequences.MagneticField_cff')
+# process.load('Configuration.StandardSequences.SimIdeal_cff')
+# process.load('Configuration.StandardSequences.Digi_cff')
+# process.load('SimGeneral.MixingModule.mixNoPU_cfi')
 # process.load('Configuration.StandardSequences.DigiToRaw_cff')
 # process.load('Configuration.StandardSequences.SimL1Emulator_cff')
 # process.load('HLTrigger.Configuration.HLT_GRun_cff')
 # process.load('Configuration.StandardSequences.RawToDigi_cff')
 # process.load('Configuration.StandardSequences.ReconstructionCosmics_cff')
-process.load('Configuration.StandardSequences.Reconstruction_cff')
-process.load('RecoLocalTracker.Configuration.RecoLocalTracker_cff')
-process.load('SimTracker.TrackTriggerAssociation.TrackTriggerAssociator_cff')
-process.load('L1Trigger.TrackTrigger.TrackTrigger_cff')
-process.load('Configuration.StandardSequences.EndOfProcess_cff')
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+# process.load('Configuration.StandardSequences.Reconstruction_cff')
+# process.load('RecoLocalTracker.Configuration.RecoLocalTracker_cff')
+# process.load('SimTracker.TrackTriggerAssociation.TrackTriggerAssociator_cff')
+# process.load('L1Trigger.TrackTrigger.TrackTrigger_cff')
+# process.load('Configuration.StandardSequences.EndOfProcess_cff')
+# process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 # process.load("Configuration.StandardSequences.SimulationRandomNumberGeneratorSeeds_cff")
 
 # process.load('L1TriggerConfig.L1GtConfigProducers.L1GtTriggerMaskTechTrigConfig_cff')
 # process.load('HLTrigger/HLTfilters/hltLevel1GTSeed_cfi')
 
 #custom BRIL configs like Geometry
-process.load('BRIL_ITsim.DataProductionTkOnly.cmsExtendedGeometry2026D999XML_cff')
-process.load('Configuration.Geometry.GeometryExtended2026D63Reco_cff')
+# process.load('BRIL_ITsim.DataProductionTkOnly.cmsExtendedGeometry2026D999XML_cff')
+# process.load('Configuration.Geometry.GeometryExtended2026D63Reco_cff')
 # process.load('BRIL_ITsim.DataProductionTkOnly.TkOnlyDigiToRaw_cff')
 # process.load('BRIL_ITsim.DataProductionTkOnly.TkOnlyRawToDigi_cff')
-print 'Running with special BRIL Tk Only Geometry & TkOnly Digitisation, Clustering'
+# print 'Running with special BRIL Tk Only Geometry & TkOnly Digitisation, Clustering'
 
-from L1Trigger.TrackTrigger.TTStubAlgorithmRegister_cfi import *
-from L1Trigger.TrackTrigger.TTStub_cfi import *
+# from L1Trigger.TrackTrigger.TTStubAlgorithmRegister_cfi import *
+# from L1Trigger.TrackTrigger.TTStub_cfi import *
 
 # randomeze the seeds every time cmsRun is invoked
 from IOMC.RandomEngine.RandomServiceHelper import RandomNumberServiceHelper
@@ -164,9 +188,11 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 process.simulation_step   = cms.Path(process.psim*process.mix)
 process.digitisationTkOnly_step = cms.Path(process.pdigi_valid)
 # process.PixelClusterizer_step = cms.Path(process.pixeltrackerlocalreco)
-process.PixelClusterizer_step = cms.Path(process.trackerlocalreco)
-process.L1TrackTrigger_step     = cms.Path(process.TrackTriggerClustersStubs)
-process.L1TTAssociator_step     = cms.Path(process.TrackTriggerAssociatorClustersStubs)
+# process.digi2raw_step = cms.Path(process.siPixelRawData)#*process.SiStripDigiToRaw)
+# process.raw2digi_step = cms.Path(process.RawToDigi_pixelOnly)
+process.PixelClusterizer_step = cms.Path(process.pixeltrackerlocalreco)
+# process.L1TrackTrigger_step     = cms.Path(process.TrackTriggerClustersStubs)
+# process.L1TTAssociator_step     = cms.Path(process.TrackTriggerAssociatorClustersStubs)
 # process.L1simulation_step = cms.Path(process.SimL1Emulator)
 # process.digi2raw_step     = cms.Path(process.DigiToRaw)
 
@@ -197,11 +223,14 @@ process.out_step            = cms.EndPath(process.output)
 
 process.schedule = cms.Schedule(process.simulation_step,
                                 process.digitisationTkOnly_step,
+                                # process.digi2raw_step,
+                                # process.raw2digi_step,
                                 process.PixelClusterizer_step,
-                                process.L1TrackTrigger_step,
-                                process.L1TTAssociator_step)
+                                # process.L1TrackTrigger_step,
+                                # process.L1TTAssociator_step)
                                 # process.L1simulation_step,
                                 # process.digi2raw_step)
+                                )
 
 # High level trigger
 
@@ -233,8 +262,8 @@ process = customiseEarlyDelete(process)
 
 # Automatic addition of the customisation function
 #customisation functions to only run Tracker Digitisation and Pixel Clustering
-from BRIL_ITsim.DataProductionTkOnly.TkOnlyDigi_cff import TkOnlyDigi
-process = TkOnlyDigi(process)
+# from BRIL_ITsim.DataProductionTkOnly.TkOnlyDigi_cff import TkOnlyDigi
+# process = TkOnlyDigi(process)
 # from BRIL_ITsim.DataProductionTkOnly.PixelClusterizerOnly_cff import PixelClusterizerOnly
 # process = PixelClusterizerOnly(process)
 # End adding early deletion
