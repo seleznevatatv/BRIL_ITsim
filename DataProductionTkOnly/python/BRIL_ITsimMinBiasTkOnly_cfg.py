@@ -62,7 +62,7 @@ from Configuration.Generator.Pythia8CommonSettings_cfi import *
 from Configuration.Generator.Pythia8CUEP8M1Settings_cfi import *
 
 process.load('BRIL_ITsim.DataProductionTkOnly.cmsExtendedGeometry2026D999XML_cff')
-print 'Running with special BRIL Tk Only Geometry'
+print('Running with special BRIL Tk Only Geometry')
 
 # randomeze the seeds every time cmsRun is invoked
 randSvc = RandomNumberServiceHelper(process.RandomNumberGeneratorService)
