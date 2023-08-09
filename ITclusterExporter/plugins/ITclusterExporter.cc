@@ -73,6 +73,8 @@ private:
     virtual void endJob() override;
 
     // ----------member data ---------------------------
+    edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> tgeomHandle;
+    edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> tTopoHandle;
     edm::EDGetTokenT<edmNew::DetSetVector<SiPixelCluster>> m_tokenClusters;
 
     // the pointers to geometry, topology and clusters
@@ -105,7 +107,9 @@ private:
 // constructors and destructor
 //
 ITclusterExporter::ITclusterExporter(const edm::ParameterSet& iConfig)
-    : m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>>(iConfig.getParameter<edm::InputTag>("clusters")))
+    : tgeomHandle(esConsumes())
+    , tTopoHandle(esConsumes())
+    , m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>>(iConfig.getParameter<edm::InputTag>("clusters")))
     , m_disk(iConfig.getUntrackedParameter<uint32_t>("disk"))
 {
     //now do what ever initialization is needed
@@ -132,17 +136,21 @@ void ITclusterExporter::analyze(const edm::Event& iEvent, const edm::EventSetup&
     iEvent.getByToken(m_tokenClusters, tclusters);
 
     // Get the geometry
-    edm::ESHandle<TrackerGeometry> tgeomHandle;
-    iSetup.get<TrackerDigiGeometryRecord>().get("idealForDigi", tgeomHandle);
+    //edm::ESHandle<TrackerGeometry> tgeomHandle;
+    //iSetup.get<TrackerDigiGeometryRecord>().get("idealForDigi", tgeomHandle);
+    iSetup.getHandle(tgeomHandle);
 
     // Get the topology
-    edm::ESHandle<TrackerTopology> tTopoHandle;
-    iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
+    //edm::ESHandle<TrackerTopology> tTopoHandle;
+    //iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
+    iSetup.getHandle(tTopoHandle);
 
     //get the pointers to geometry, topology and clusters
-    tTopo = tTopoHandle.product();
-    const TrackerGeometry* tkGeom = &(*tgeomHandle);
-    tkGeom = tgeomHandle.product();
+    //tTopo = tTopoHandle.product();
+    //const TrackerGeometry* tkGeom = &(*tgeomHandle);
+    //tkGeom = tgeomHandle.product();
+    tTopo = &iSetup.getData(tTopoHandle);
+    tkGeom = &iSetup.getData(tgeomHandle);
     clusters = tclusters.product();
 
     //loop the modules in the cluster collection
