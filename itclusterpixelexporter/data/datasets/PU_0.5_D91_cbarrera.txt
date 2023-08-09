@@ -1,0 +1,10 @@
+/eos/home-c/cbarrera/sim2023/PUdata/FullDet/timewalk/step3_pixel_PU_0.5.1.root
+/eos/home-c/cbarrera/sim2023/PUdata/FullDet/timewalk/step3_pixel_PU_0.5.0.root
+/eos/home-c/cbarrera/sim2023/PUdata/FullDet/timewalk/step3_pixel_PU_0.5.3.root
+/eos/home-c/cbarrera/sim2023/PUdata/FullDet/timewalk/step3_pixel_PU_0.5.2.root
+/eos/home-c/cbarrera/sim2023/PUdata/FullDet/timewalk/step3_pixel_PU_0.5.5.root
+/eos/home-c/cbarrera/sim2023/PUdata/FullDet/timewalk/step3_pixel_PU_0.5.4.root
+/eos/home-c/cbarrera/sim2023/PUdata/FullDet/timewalk/step3_pixel_PU_0.5.7.root
+/eos/home-c/cbarrera/sim2023/PUdata/FullDet/timewalk/step3_pixel_PU_0.5.6.root
+/eos/home-c/cbarrera/sim2023/PUdata/FullDet/timewalk/step3_pixel_PU_0.5.9.root
+/eos/home-c/cbarrera/sim2023/PUdata/FullDet/timewalk/step3_pixel_PU_0.5.8.root
