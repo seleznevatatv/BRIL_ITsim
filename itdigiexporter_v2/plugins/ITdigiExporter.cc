@@ -69,6 +69,7 @@ struct ITModuleEvent{
     int event; // event number, one entry
     uint32_t side;  // side, one entry
     uint32_t disk;  // disk, one entry
+    uint32_t layer; // front or backside of a single disk, one entry;
     uint32_t ring;  // ring, one entry
     uint32_t module;// module ID, one entry
     std::vector<uint32_t> row;//vector of row coordinates; all digis for this module and event
@@ -78,11 +79,13 @@ struct ITModuleEvent{
     std::vector<std::vector<int>> clusters;//vector of clusters, each cluster is one entry in the outer vector, each cluster represented by a vector of int with row in 16 MSB, then col
     std::vector<std::vector<uint32_t>> cluSimTrackId;//simTrackIds for each cluster: a vector of uin32_t for each cluster, each pixel in the clusters has one 32 bit simtrackid
     std::vector<uint32_t> cluMultiplicity;//the multiplicity of each cluster, vector for clusters
+    std::vector<std::vector<int>> clusters_charge;
 
     void clear(){
         this->event = -1;
         this->side = 0;
         this->disk = 0;
+        this->layer = 0;
         this->ring = 0;
         this->module = 0;
         this->row.clear();
@@ -91,11 +94,12 @@ struct ITModuleEvent{
         this->clusters.clear();
         this->cluSimTrackId.clear();
         this->cluMultiplicity.clear();
+        this->clusters_charge.clear();
     }
 
     void print()
     {
-        std::cout << "Event " << this->event << " Side " << this->side << " Disk " << this->disk << " Ring " << this->ring << "Module " << this->module << std::endl;
+        std::cout << "Event " << this->event << " Side " << this->side << " Disk " << this->disk << " Layer " << this->layer << " Ring " << this->ring << "Module " << this->module << std::endl;
         //if(this->row.size() == this->column.size() == this->adc.size())
         //{
         std::cout << "Hits: ";
@@ -126,11 +130,12 @@ struct ITModuleEvent{
         std::cout << "Digi size: " << this->row.size() << " | " << this->column.size() << " ---  Cluster size " << clusterpixelcount << std::endl;
     }
 
-    void setModule(int event, unsigned int side, unsigned int disk, unsigned int ring, unsigned int module)
+    void setModule(int event, unsigned int side, unsigned int disk, unsigned int layer, unsigned int ring, unsigned int module)
     {
         this->event = event;
         this->side = side;
         this->disk = disk;
+        this->layer = layer;
         this->ring = ring;
         this->module = module;
     }
@@ -145,6 +150,11 @@ struct ITModuleEvent{
     void fillCluster(std::vector<int> tmp_clu)
     {
         this->clusters.push_back(tmp_clu);
+    }
+
+    void fillClusterCharge(std::vector<int> tmp_clu)
+    {
+        this->clusters_charge.push_back(tmp_clu);
     }
 
     void fillSimLinks(std::vector<uint32_t> SimTrackIds, size_t cluMultiplicity)
@@ -168,6 +178,8 @@ class ITdigiExporter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         virtual void endJob() override;
 
         // ----------member data ---------------------------
+        edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> tgeomHandle;
+        edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> tTopoHandle;
         edm::EDGetTokenT<edmNew::DetSetVector<SiPixelCluster>> m_tokenClusters;
         edm::EDGetTokenT<edm::DetSetVector<PixelDigi>> m_tokenDigis; // digi
         edm::EDGetTokenT<edm::DetSetVector<PixelDigiSimLink>> m_tokenSimLinks;
@@ -177,6 +189,7 @@ class ITdigiExporter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         const TrackerTopology* tTopo = NULL;
         const TrackerGeometry* tkGeom = NULL;
         const edmNew::DetSetVector<SiPixelCluster>* clusters = NULL;
+        const edmNew::DetSetVector<SiPixelCluster>* clusters_charge = NULL;
         const edm::DetSetVector<PixelDigi>* digis = NULL;  //defining pointer to digis - COB 26.02.19
         const edm::DetSetVector<PixelDigiSimLink>* simlinks = NULL;
 
@@ -202,7 +215,14 @@ class ITdigiExporter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 //
 // constants, enums and typedefs
 //
-
+std::vector<std::tuple<uint32_t,uint32_t>>   backside_panel_ids({{348655e3, 348680e3},
+                        {349175e3, 349205e3},
+                        {349703e3, 349723e3},
+                        {350227e3, 350248e3},
+                        {357042e3, 357063e3},
+                        {357567e3, 357588e3},
+                        {358091e3, 358112e3},
+                        {358616e3, 358637e3}});
 //
 // static data member definitions
 //
@@ -211,7 +231,10 @@ class ITdigiExporter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 // constructors and destructor
 //
 ITdigiExporter::ITdigiExporter(const edm::ParameterSet& iConfig) :
-    m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>>(iConfig.getParameter<edm::InputTag>("clusters")))
+    tgeomHandle(esConsumes())
+    , tTopoHandle(esConsumes())
+    , m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>>(iConfig.getParameter<edm::InputTag>("clusters")))
+    // , m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>>(iConfig.getParameter<edm::InputTag>("clusters_charge")))
     , m_tokenDigis(consumes<edm::DetSetVector<PixelDigi>>(iConfig.getParameter<edm::InputTag>("digis"))) //adding digis variable - COB 26.02.19
     , m_tokenSimLinks(consumes<edm::DetSetVector<PixelDigiSimLink>>(iConfig.getParameter<edm::InputTag>("simlinks")))
     , m_Eventoffset(iConfig.getParameter<int>("eventNoOffset"))
@@ -221,7 +244,9 @@ ITdigiExporter::ITdigiExporter(const edm::ParameterSet& iConfig) :
     m_tree->Branch("event",  &m_event.event , "event/i");
     m_tree->Branch("side",  &m_event.side);
     m_tree->Branch("disk",  &m_event.disk);
+    m_tree->Branch("layer",  &m_event.layer);
     m_tree->Branch("ring",  &m_event.ring);
+
     m_tree->Branch("module",  &m_event.module);
     m_tree->Branch("row",    &m_event.row);
     m_tree->Branch("column", &m_event.column);
@@ -229,6 +254,7 @@ ITdigiExporter::ITdigiExporter(const edm::ParameterSet& iConfig) :
     m_tree->Branch("clusters",   &m_event.clusters);
     //m_tree->Branch("cluSimTrackId",   &m_event.cluSimTrackId);
     m_tree->Branch("cluMultiplicity",   &m_event.cluMultiplicity);
+    m_tree->Branch("clusters_charge",   &m_event.clusters_charge);
 
     //now do what ever initialization is needed
     m_nevents = 0;
@@ -269,18 +295,23 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     iEvent.getByToken(m_tokenSimLinks, tsimlinks);
 
     // Get the geometry
-    edm::ESHandle<TrackerGeometry> tgeomHandle;
-    iSetup.get<TrackerDigiGeometryRecord>().get("idealForDigi", tgeomHandle);
+    //edm::ESHandle<TrackerGeometry> tgeomHandle;
+    //iSetup.get<TrackerDigiGeometryRecord>().get("idealForDigi", tgeomHandle);
+    iSetup.getHandle(tgeomHandle);
 
     // Get the topology
-    edm::ESHandle<TrackerTopology> tTopoHandle;
-    iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
+    //edm::ESHandle<TrackerTopology> tTopoHandle;
+    //iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
+    iSetup.getHandle(tTopoHandle);
 
     //get the pointers to geometry and topology
-    tTopo = tTopoHandle.product();
+    //tTopo = tTopoHandle.product();
     //const TrackerGeometry* tkGeom = &(*tgeomHandle);
-    tkGeom = tgeomHandle.product();
+    //tkGeom = tgeomHandle.product();
+    tTopo = &iSetup.getData(tTopoHandle);
+    tkGeom = &iSetup.getData(tgeomHandle);
     clusters = tclusters.product();
+    clusters_charge = tclusters.product();
     digis = tdigis.product();  //pointer to digis - COB 26.02.19
     simlinks = tsimlinks.product();
 
@@ -310,11 +341,28 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
                 unsigned int side = tTopo->pxfSide(detId);
                 unsigned int ring = tTopo->pxfBlade(detId);
                 unsigned int module = tTopo->pxfModule(detId);
+                unsigned int layer = 1;
+
+                for (auto [min_id, max_id] : backside_panel_ids)
+                    layer = (detId > min_id && detId < max_id) ? 2 : layer;
+                //std::cout << module << std::endl;
+                if (ring == 1 && layer ==2) {
+                    module += 10;
+                } else if (ring == 2 && layer == 2) {
+                     module += 14;
+                } else if (ring == 3 && layer == 2) {
+                     module += 18;
+                } else if (ring == 4 && layer == 2) {
+                     module += 22;
+                } else if (ring == 5 && layer == 2) {
+                    module += 24;
+                }
+                //std::cout << module << std::endl;
 
                 //since every module is it's own entry in the tree I need to clear for every module, otherwise the vector explodes
                 this->m_event.clear();
                 // now fill the important variables for location
-                m_event.setModule(event, side, disk, ring, module);
+                m_event.setModule(event, side, disk, layer, ring, module);
 
                 //introduce some counters for the size of the digi collection for this module and the total number of pixels in the clusters
                 int nDigis=0;
@@ -391,6 +439,7 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
                             //now push back the vector with the pixels in the cluster to the cluster vector
                             m_event.fillCluster(tmpClu);
+                            m_event.fillClusterCharge(tmpClu);
 
                             //now push back the SimTrackIds for this cluster
                             m_event.fillSimLinks(tmpSimTrackIds, simTrackIds.size());
@@ -421,7 +470,7 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
                 //print some debug information
                 if(nDigis != nClusterPixels)
                 {
-                    std::cout << "DEBUG: Evnet "<<event << " Side " << side << " Disk " << disk << " Ring " << ring << " Module " << module << " --- Digis: "<<nDigis << " | Pixels in Clusters: " << nClusterPixels << " --- nClusters: " << nClusters << std::endl;
+                    std::cout << "DEBUG: Evnet "<<event << " Side " << side << " Disk " << disk << "layer" << layer << " Ring " << ring << " Module " << module << " --- Digis: "<<nDigis << " | Pixels in Clusters: " << nClusterPixels << " --- nClusters: " << nClusters << std::endl;
                     this->m_event.print2();
                     if(nClusterPixels > nDigis)
                     {
