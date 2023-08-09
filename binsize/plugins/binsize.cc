@@ -85,6 +85,8 @@ class binsize : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         int getBin(int ring, int quarter);
 
         // ----------member data ---------------------------
+        edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> tgeomHandle;
+        edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> tTopoHandle;
         edm::EDGetTokenT<edmNew::DetSetVector<SiPixelCluster>> m_tokenClusters;
         //edm::EDGetTokenT<edm::DetSetVector<PixelDigiSimLink>> m_tokenSimLinks;
         edm::EDGetTokenT<edm::DetSetVector<PixelDigi>> m_tokenDigis;
@@ -135,7 +137,9 @@ class binsize : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 //
 binsize::binsize(const edm::ParameterSet& iConfig)
     : //m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>> ("clusters"))
-        m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>>(iConfig.getParameter<edm::InputTag>("clusters")))
+        tgeomHandle(esConsumes())
+        , tTopoHandle(esConsumes())
+        , m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>>(iConfig.getParameter<edm::InputTag>("clusters")))
         //, m_tokenSimLinks(consumes<edm::DetSetVector<PixelDigiSimLink>>(iConfig.getParameter<edm::InputTag>("simlinks")))
         //, m_tokenDigis(consumes<edm::DetSetVector<PixelDigi>>(iConfig.getParameter<edm::InputTag>("digis"))) //adding digis variable - COB 26.02.19
         , m_maxBinTEPX(iConfig.getUntrackedParameter<uint32_t>("maxBinTEPX"))
@@ -282,17 +286,21 @@ binsize::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     //iEvent.getByToken(m_tokenSimLinks, tsimlinks);
 
     // Get the geometry
-    edm::ESHandle<TrackerGeometry> tgeomHandle;
-    iSetup.get<TrackerDigiGeometryRecord>().get("idealForDigi", tgeomHandle);
+    //edm::ESHandle<TrackerGeometry> tgeomHandle;
+    //iSetup.get<TrackerDigiGeometryRecord>().get("idealForDigi", tgeomHandle);
+    iSetup.getHandle(tgeomHandle);
 
     // Get the topology
-    edm::ESHandle<TrackerTopology> tTopoHandle;
-    iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
+    //edm::ESHandle<TrackerTopology> tTopoHandle;
+    //iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
+    iSetup.getHandle(tTopoHandle);
 
     //get the pointers to geometry, topology and clusters
-    tTopo = tTopoHandle.product();
+    //tTopo = tTopoHandle.product();
     //const TrackerGeometry* tkGeom = &(*geomHandle);
-    tkGeom = tgeomHandle.product();
+    //tkGeom = tgeomHandle.product();
+    tTopo = &iSetup.getData(tTopoHandle);
+    tkGeom = &iSetup.getData(tgeomHandle);
     clusters = tclusters.product();
     //simlinks = tsimlinks.product();
     //digis = tdigis.product();  //pointer to digis - COB 26.02.19
