@@ -55,7 +55,7 @@ Implementation:
 
 #include <TH2F.h>
 #include <TTree.h>
-
+#include <TMath.h>
 //
 // class declaration
 //
@@ -103,6 +103,9 @@ private:
     bool areSameSimTrackId(std::set<unsigned int> first, std::set<unsigned int> second, std::set<unsigned int>&);
     uint32_t getModuleID(bool, unsigned int, unsigned int, unsigned int);
     // ----------member data ---------------------------
+    edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> tgeomHandle;
+    edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> tTopoHandle;
+
     edm::EDGetTokenT<edmNew::DetSetVector<SiPixelCluster>> m_tokenClusters;
     edm::EDGetTokenT<edm::DetSetVector<PixelDigiSimLink>> m_tokenSimLinks;
     edm::EDGetTokenT<edm::DetSetVector<PixelDigi>> m_tokenDigis;
@@ -246,7 +249,9 @@ private:
 //
 ITclusterAnalyzer::ITclusterAnalyzer(const edm::ParameterSet& iConfig)
         : //m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>> ("clusters"))
-        m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>>(iConfig.getParameter<edm::InputTag>("clusters")))
+        tgeomHandle(esConsumes())
+        , tTopoHandle(esConsumes())
+        , m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>>(iConfig.getParameter<edm::InputTag>("clusters")))
         , m_tokenSimLinks(consumes<edm::DetSetVector<PixelDigiSimLink>>(iConfig.getParameter<edm::InputTag>("simlinks")))
         , m_tokenDigis(consumes<edm::DetSetVector<PixelDigi>>(iConfig.getParameter<edm::InputTag>("digis"))) //adding digis variable - COB 26.02.19
         , m_maxBin(iConfig.getUntrackedParameter<uint32_t>("maxBin"))
@@ -534,6 +539,7 @@ void ITclusterAnalyzer::beginJob() {
 // ------------ method called for each event  ------------
 void ITclusterAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
+    
     //get the digis - COB 26.02.19
     edm::Handle<edm::DetSetVector<PixelDigi>> tdigis;
     iEvent.getByToken(m_tokenDigis, tdigis);
@@ -547,17 +553,25 @@ void ITclusterAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
     iEvent.getByToken(m_tokenSimLinks, tsimlinks);
 
     // Get the geometry
-    edm::ESHandle<TrackerGeometry> tgeomHandle;
-    iSetup.get<TrackerDigiGeometryRecord>().get("idealForDigi", tgeomHandle);
+    //edm::ESHandle<TrackerGeometry> tgeomHandle;
+    //iSetup.get<TrackerDigiGeometryRecord>().getHandle("idealForDigi", tgeomHandle);
+    // Correct syntax for CMSSW_13_0_X:
+    //edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> tgeomHandle;
+    iSetup.getHandle(tgeomHandle);
 
     // Get the topology
-    edm::ESHandle<TrackerTopology> tTopoHandle;
-    iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
+    //edm::ESHandle<TrackerTopology> tTopoHandle;
+    //iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
+    // Correct syntax for CMSSW_13_0_X:
+    //edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> tTopoHandle; 
+    iSetup.getHandle(tTopoHandle);
 
     //get the pointers to geometry, topology and clusters
-    tTopo = tTopoHandle.product();
+    //tTopo = tTopoHandle.product();
     //const TrackerGeometry* tkGeom = &(*geomHandle);
-    tkGeom = tgeomHandle.product();
+    tTopo = &iSetup.getData(tTopoHandle);  // Correct syntax for CMSSW_13_0_X
+    //tkGeom = tgeomHandle.product();
+    tkGeom = &iSetup.getData(tgeomHandle); // Correct syntax for CMSSW_13_0_X
     clusters = tclusters.product();
     simlinks = tsimlinks.product();
     digis = tdigis.product();  //pointer to digis - COB 26.02.19
@@ -1067,7 +1081,7 @@ void ITclusterAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup&
         }
     }
 
-
+    
     m_nevents++;
 }
 
