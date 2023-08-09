@@ -76,7 +76,7 @@ process.load('BRIL_ITsim.DataProductionTkOnly.cmsExtendedGeometry2026D999XML_cff
 process.load('Configuration.Geometry.GeometryExtended2026D63Reco_cff')
 # process.load('BRIL_ITsim.DataProductionTkOnly.TkOnlyDigiToRaw_cff')
 # process.load('BRIL_ITsim.DataProductionTkOnly.TkOnlyRawToDigi_cff')
-print 'Running with special BRIL Tk Only Geometry & TkOnly Digitisation, Clustering'
+print('Running with special BRIL Tk Only Geometry & TkOnly Digitisation, Clustering')
 
 from L1Trigger.TrackTrigger.TTStubAlgorithmRegister_cfi import *
 from L1Trigger.TrackTrigger.TTStub_cfi import *
