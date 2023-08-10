@@ -318,6 +318,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
     int event  = iEvent.id().event();
     event+= m_Eventoffset;
 
+
     // Module loop
     for (typename edm::DetSetVector<PixelDigi>::const_iterator DSVit = digis->begin(); DSVit != digis->end(); DSVit++) {
 
@@ -373,11 +374,14 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                 //if((event == 48 || event == 54) && (side ==2) && (disk == 11) && (ring == 4) && (module == 32))
                 //thisevent = true;
 
+                std::map<std::pair<int,int>, uint32_t> adc_data_pixel_map;
+
                 //loop over the digis for this module
-                // for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++)
-                // {
-                //     m_event.fillDigis(digit->row(), digit->column(), digit->adc());
-                // }
+                for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++)
+                {
+                    // m_event.fillDigis(digit->row(), digit->column(), digit->adc());
+                    adc_data_pixel_map[std::make_pair(digit->column(), digit->row())] = digit->adc();
+                }
                 //append the det set vector iterator size
                 nDigis += DSVit->size();
 
@@ -414,7 +418,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                                 uint16_t y = pix.y;
                                 uint64_t adc = pix.adc;
 
-                                m_event.fillDigis((int)y, (int)x, (int)adc);
+                                m_event.fillDigis((int)y, (int)x, (int)adc_data_pixel_map[std::make_pair(x,y)]);
 
                                 //uint64_t dead = 0xDEAD;
                                 //int tmp = x << 48 | y << 32 | adc << 16 | dead;
