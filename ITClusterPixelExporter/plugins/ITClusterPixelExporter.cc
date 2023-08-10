@@ -471,7 +471,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                     continue;
                 }
 
-                nDigis += this->m_event.adc.size()
+                nDigis += this->m_event.adc.size();
 
                 if(thisevent)m_event.print();
                 this->m_tree->Fill();
