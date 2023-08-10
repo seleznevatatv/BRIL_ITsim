@@ -2,9 +2,9 @@
 #include "FWCore/TestProcessor/interface/TestProcessor.h"
 #include "FWCore/Utilities/interface/Exception.h"
 
-static constexpr auto s_tag = "[ITdigiExporter]";
+static constexpr auto s_tag = "[ITClusterPixelExporter]";
 
-TEST_CASE("Standard checks of ITdigiExporter", s_tag) {
+TEST_CASE("Standard checks of ITClusterPixelExporter", s_tag) {
   const std::string baseConfig{
 R"_(from FWCore.TestProcessor.TestProcess import *
 process = TestProcess()

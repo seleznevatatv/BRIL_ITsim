@@ -17,7 +17,7 @@ inputs=['file:/eos/home-t/tselezne/PUdata/step3_pixel_PU_0.5.0.root',\
 
 
 # create a new CMS process
-process = cms.Process("ITdigiExporter")
+process = cms.Process("ITClusterPixelExporter")
 
 
 # set up the options
@@ -78,7 +78,7 @@ process.source = cms.Source("PoolSource",
                         )
 
 # the config of my analyzer
-process.BRIL_IT_Analysis = cms.EDAnalyzer('ITdigiExporter',
+process.BRIL_IT_Analysis = cms.EDAnalyzer('ITClusterPixelExporter',
                                         eventNoOffset=cms.int32(offset),
                                         clusters=cms.InputTag("siPixelClustersPreSplitting"),
                                         digis=cms.InputTag("simSiPixelDigis", "Pixel", "RECO"),
