@@ -1,1 +1,0 @@
-/eos/home-c/cbarrera/sim2023/PUdata/FullDet/timewalk/step3_pixel_PU_200.0.4.root
