@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    BRIL_ITsim/ITdigiExporter
-// Class:      ITdigiExporter
+// Package:    BRIL_ITsim/ITClusterPixelExporter
+// Class:      ITClusterPixelExporter
 //
-/**\class ITdigiExporter ITdigiExporter.cc BRIL_ITsim/ITdigiExporter/plugins/ITdigiExporter.cc
+/**\class ITClusterPixelExporter ITClusterPixelExporter.cc BRIL_ITsim/ITClusterPixelExporter/plugins/ITClusterPixelExporter.cc
 
 Description: [one line class summary]
 
@@ -165,10 +165,10 @@ struct ITModuleEvent{
 };
 
 
-class ITdigiExporter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
+class ITClusterPixelExporter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
     public:
-        explicit ITdigiExporter(const edm::ParameterSet&);
-        ~ITdigiExporter();
+        explicit ITClusterPixelExporter(const edm::ParameterSet&);
+        ~ITClusterPixelExporter();
 
         static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -230,7 +230,7 @@ std::vector<std::tuple<uint32_t,uint32_t>>   backside_panel_ids({{348655e3, 3486
 //
 // constructors and destructor
 //
-ITdigiExporter::ITdigiExporter(const edm::ParameterSet& iConfig) :
+ITClusterPixelExporter::ITClusterPixelExporter(const edm::ParameterSet& iConfig) :
     tgeomHandle(esConsumes())
     , tTopoHandle(esConsumes())
     , m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>>(iConfig.getParameter<edm::InputTag>("clusters")))
@@ -264,7 +264,7 @@ ITdigiExporter::ITdigiExporter(const edm::ParameterSet& iConfig) :
     toofewcounter = 0;
 }
 
-ITdigiExporter::~ITdigiExporter()
+ITClusterPixelExporter::~ITClusterPixelExporter()
 {
 
     // do anything here that needs to be done at desctruction time
@@ -276,7 +276,7 @@ ITdigiExporter::~ITdigiExporter()
 //
 
 // ------------ method called for each event  ------------
-void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     // Empty event container
     // this is useful here just as a safety mesure but actually I need to do it in the beginning of each module
@@ -492,13 +492,13 @@ void ITdigiExporter::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 }
 
 // ------------ method called once each job just before starting event loop  ------------
-void ITdigiExporter::beginJob()
+void ITClusterPixelExporter::beginJob()
 {
 
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
-void ITdigiExporter::endJob()
+void ITClusterPixelExporter::endJob()
 {
     //this->m_tree->Write();
     std::cout << "Processed "<< m_nevents << " events with " << modulecounter << " modules (total) of which " << toomanycounter << " having more pixels in clusters than in the digis and " << toofewcounter << " having more digis than pixels in clusters" << std::endl;
@@ -506,7 +506,7 @@ void ITdigiExporter::endJob()
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-void ITdigiExporter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+void ITClusterPixelExporter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 {
     //The following says we do not know what parameters are allowed so do no validation
     // Please change this to state exactly what you do use, even if it is no parameters
@@ -522,4 +522,4 @@ void ITdigiExporter::fillDescriptions(edm::ConfigurationDescriptions& descriptio
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(ITdigiExporter);
+DEFINE_FWK_MODULE(ITClusterPixelExporter);

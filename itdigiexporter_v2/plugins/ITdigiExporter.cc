@@ -165,7 +165,7 @@ struct ITModuleEvent{
 };
 
 
-class ITdigiExporter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
+class ITClusterPixelExporter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
     public:
         explicit ITdigiExporter(const edm::ParameterSet&);
         ~ITdigiExporter();
@@ -230,7 +230,7 @@ std::vector<std::tuple<uint32_t,uint32_t>>   backside_panel_ids({{348655e3, 3486
 //
 // constructors and destructor
 //
-ITdigiExporter::ITdigiExporter(const edm::ParameterSet& iConfig) :
+ITClusterPixelExporter::ITClusterPixelExporter(const edm::ParameterSet& iConfig) :
     tgeomHandle(esConsumes())
     , tTopoHandle(esConsumes())
     , m_tokenClusters(consumes<edmNew::DetSetVector<SiPixelCluster>>(iConfig.getParameter<edm::InputTag>("clusters")))
