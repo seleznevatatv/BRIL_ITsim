@@ -21,7 +21,7 @@ Implementation:
 // system include files
 #include <fstream>
 #include <memory>
-#include <unordered_map>
+#include <map>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -375,7 +375,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                 //if((event == 48 || event == 54) && (side ==2) && (disk == 11) && (ring == 4) && (module == 32))
                 //thisevent = true;
 
-                std::unordered_map<std::pair<int,int>, uint32_t> adc_data_pixel_map;
+                // std::map<std::pair<int,int>, uint32_t> adc_data_pixel_map;
 
                 //loop over the digis for this module
                 for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++)
@@ -419,7 +419,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                                 uint16_t y = pix.y;
                                 uint64_t adc = pix.adc;
 
-                                m_event.fillDigis((int)y, (int)x, (int)adc_data_pixel_map[std::make_pair(x,y)]);
+                                // m_event.fillDigis((int)y, (int)x, (int)adc_data_pixel_map[std::make_pair(x,y)]);
 
                                 //uint64_t dead = 0xDEAD;
                                 //int tmp = x << 48 | y << 32 | adc << 16 | dead;
@@ -472,7 +472,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                     continue;
                 }
 
-                nDigis += this->m_event.adc.size();
+                // nDigis += this->m_event.adc.size();
 
                 if(thisevent)m_event.print();
                 this->m_tree->Fill();
