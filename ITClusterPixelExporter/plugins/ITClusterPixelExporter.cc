@@ -472,10 +472,11 @@ void ITClusterPixelExporter::analyze(const edm::Event &iEvent, const edm::EventS
                                     std::cout << "warning, nothing found in SimLink collection for pixel " << x << " " << y << " channel " << clusterChannel << std::endl;
                             } // end of loop over all pixels in cluster
 
-
                             // now push back the vector with the pixels in the cluster to the cluster vector
                             m_event.fillCluster(tmpClu);
                             m_event.fillClusterCharge(tmpClu);
+
+                            std::cout << tmpClu.size() << std::endl;
 
                             // now push back the SimTrackIds for this cluster
                             m_event.fillSimLinks(tmpSimTrackIds, simTrackIds.size());
@@ -484,8 +485,6 @@ void ITClusterPixelExporter::analyze(const edm::Event &iEvent, const edm::EventS
                             // if(tmpClu.size() != tmpSimTrackIds.size()) std::cout << "Warning - clustersize: "<< tmpClu.size() << " sim link vector size " << tmpSimTrackIds.size() << " # of unique SimTrackIDs " << simTrackIds.size() << std::endl;
                             // else std::cout << "Same size!" << std::endl;
                         } // end of cluster iteration
-
-
 
                     } // end of detID found in Sim links
                     else
@@ -500,7 +499,7 @@ void ITClusterPixelExporter::analyze(const edm::Event &iEvent, const edm::EventS
                     continue;
                 }
 
-                std::cout << "number of raw hits: " << this->m_event.adc.size() << " number of cluster hits" << nClusterPixels << std::endl;
+                // std::cout << "number of raw hits: " << this->m_event.adc.size() << " number of cluster hits: " << nClusterPixels << std::endl;
 
                 nDigis += this->m_event.adc.size();
 
