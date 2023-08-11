@@ -377,7 +377,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
 
                 std::map<std::pair<int,int>, uint32_t> adc_data_pixel_map;
 
-                std::cout << "Digi pixels:" << std::endl;
+                // std::cout << "Digi pixels:" << std::endl;
 
                 //loop over the digis for this module
                 for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++)
@@ -417,7 +417,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                             nClusterPixels += size;
                             //if(size ==1) std::cout << "Single Pixel Cluster" << std::endl;
 
-                            std::cout << "cluster pixels:" << std::endl;
+                            // std::cout << "cluster pixels:" << std::endl;
 
                             for (int i = 0; i < size; i++) {
                                 SiPixelCluster::Pixel pix = cluit->pixel(i);
@@ -430,7 +430,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                                 // std::cout << (int)x << " " << (int)y << " " << adc_val->second << std::endl;
 
                                 if(adc_val != adc_data_pixel_map.end()) {
-                                    m_event.fillDigis((int)y, (int)x, adc_val->second);
+                                    m_event.fillDigis((int)x, (int)y, adc_val->second);
 
                                     // std::cout << (int)x << " " << (int)y << " " << adc_val->second << std::endl;
                                 }
