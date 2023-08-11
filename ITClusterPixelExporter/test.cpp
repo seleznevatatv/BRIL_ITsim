@@ -1,19 +1,16 @@
 
 
-
 #include <iostream>
 #include <map>
 
-
 int main(int argc, char const *argv[])
 {
-    
-    std::map<int,int> m;
 
+    std::map<std::pair<char, char>, int> m;
 
-    auto l = m.find(5);
- 
-    auto a = *l;
+    auto l = m.find({5, 3});
+
+    auto a = l->second;
 
     return 0;
 }
