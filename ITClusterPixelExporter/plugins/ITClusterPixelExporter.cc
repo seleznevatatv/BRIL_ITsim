@@ -448,7 +448,7 @@ void ITClusterPixelExporter::analyze(const edm::Event &iEvent, const edm::EventS
                                 }
                                 // uint64_t dead = 0xDEAD;>
                                 // int tmp = x << 48 | y << 32 | adc << 16 | dead;
-                                int tmp = x << 16 | y; //
+                                int tmp = (uint64_t)x << 16 | (uint64_t)y; //
                                 tmpClu.push_back(tmp);
 
                                 // now deal with the simLinks
@@ -476,8 +476,6 @@ void ITClusterPixelExporter::analyze(const edm::Event &iEvent, const edm::EventS
                             m_event.fillCluster(tmpClu);
                             m_event.fillClusterCharge(tmpClu);
 
-                            std::cout << tmpClu.size() << std::endl;
-
                             // now push back the SimTrackIds for this cluster
                             m_event.fillSimLinks(tmpSimTrackIds, simTrackIds.size());
 
@@ -502,6 +500,9 @@ void ITClusterPixelExporter::analyze(const edm::Event &iEvent, const edm::EventS
                 // std::cout << "number of raw hits: " << this->m_event.adc.size() << " number of cluster hits: " << nClusterPixels << std::endl;
 
                 nDigis += this->m_event.adc.size();
+
+                std::cout << this->m_event.clusters.size() << std::endl;
+
 
                 if (thisevent)
                     m_event.print();
