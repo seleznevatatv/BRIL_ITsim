@@ -381,6 +381,8 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                 for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++)
                 {
                     // m_event.fillDigis(digit->row(), digit->column(), digit->adc());
+                    std::cout << (int)digit->column() << " " << (int)digit->row() << " " << adc_val->second << std::endl;
+
                     adc_data_pixel_map[std::make_pair(digit->column(), digit->row())] = digit->adc();
                 }
                 //append the det set vector iterator size
@@ -421,7 +423,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
 
                                 auto adc_val = adc_data_pixel_map.find(std::make_pair(x,y));
 
-                                std::cout << (int)x << " " << (int)y << " " << adc_val->second << std::endl;
+                                // std::cout << (int)x << " " << (int)y << " " << adc_val->second << std::endl;
 
                                 if(adc_val != adc_data_pixel_map.end()) {
                                     m_event.fillDigis((int)y, (int)x, adc_val->second);
