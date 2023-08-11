@@ -448,7 +448,11 @@ void ITClusterPixelExporter::analyze(const edm::Event &iEvent, const edm::EventS
                                 }
                                 // uint64_t dead = 0xDEAD;>
                                 // int tmp = x << 48 | y << 32 | adc << 16 | dead;
-                                int tmp = (uint64_t)x << 16 | (uint64_t)y; //
+                                int tmp = ((int)x << 16) | (int)y; //
+
+                                std::cout << tmp << std::endl;
+
+
                                 tmpClu.push_back(tmp);
 
                                 // now deal with the simLinks
@@ -500,9 +504,6 @@ void ITClusterPixelExporter::analyze(const edm::Event &iEvent, const edm::EventS
                 // std::cout << "number of raw hits: " << this->m_event.adc.size() << " number of cluster hits: " << nClusterPixels << std::endl;
 
                 nDigis += this->m_event.adc.size();
-
-                std::cout << this->m_event.clusters.size() << std::endl;
-
 
                 if (thisevent)
                     m_event.print();
