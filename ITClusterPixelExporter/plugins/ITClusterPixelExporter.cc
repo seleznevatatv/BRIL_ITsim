@@ -21,6 +21,7 @@ Implementation:
 // system include files
 #include <fstream>
 #include <memory>
+#include <unordered_map>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -374,16 +375,16 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                 //if((event == 48 || event == 54) && (side ==2) && (disk == 11) && (ring == 4) && (module == 32))
                 //thisevent = true;
 
-                std::map<std::pair<int,int>, uint32_t> adc_data_pixel_map;
+                std::unordered_map<std::pair<int,int>, uint32_t> adc_data_pixel_map;
 
                 //loop over the digis for this module
                 for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++)
                 {
-                    // m_event.fillDigis(digit->row(), digit->column(), digit->adc());
-                    adc_data_pixel_map[std::make_pair(digit->column(), digit->row())] = digit->adc();
+                    m_event.fillDigis(digit->row(), digit->column(), digit->adc());
+                    // adc_data_pixel_map[std::make_pair(digit->column(), digit->row())] = digit->adc();
                 }
                 //append the det set vector iterator size
-                // nDigis += DSVit->size();
+                nDigis += DSVit->size();
 
                 //now find the DetSet for SiPixelClusters based on DetId
                 edmNew::DetSetVector<SiPixelCluster>::const_iterator theit = clusters->find(detId);
