@@ -381,7 +381,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                 for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++)
                 {
                     // m_event.fillDigis(digit->row(), digit->column(), digit->adc());
-                    std::cout << (int)digit->column() << " " << (int)digit->row() << " " << adc_val->second << std::endl;
+                    std::cout << (int)digit->column() << " " << (int)digit->row() << " " << digit->adc() << std::endl;
 
                     adc_data_pixel_map[std::make_pair(digit->column(), digit->row())] = digit->adc();
                 }
