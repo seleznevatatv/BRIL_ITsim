@@ -500,7 +500,7 @@ void ITClusterPixelExporter::analyze(const edm::Event &iEvent, const edm::EventS
                     continue;
                 }
 
-                std::cout << "number of raw hits: " << this->m_event.adc.size() << " number of cluster hits" << nClusterPixels;
+                std::cout << "number of raw hits: " << this->m_event.adc.size() << " number of cluster hits" << nClusterPixels << std::endl;
 
                 nDigis += this->m_event.adc.size();
 
