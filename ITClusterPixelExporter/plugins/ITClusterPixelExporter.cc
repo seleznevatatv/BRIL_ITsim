@@ -384,7 +384,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                     adc_data_pixel_map[std::make_pair(digit->column(), digit->row())] = digit->adc();
                 }
                 //append the det set vector iterator size
-                nDigis += DSVit->size();
+                // nDigis += DSVit->size();
 
                 //now find the DetSet for SiPixelClusters based on DetId
                 edmNew::DetSetVector<SiPixelCluster>::const_iterator theit = clusters->find(detId);
@@ -475,7 +475,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                     continue;
                 }
 
-                // nDigis += this->m_event.adc.size();
+                nDigis += this->m_event.adc.size();
 
                 if(thisevent)m_event.print();
                 this->m_tree->Fill();
