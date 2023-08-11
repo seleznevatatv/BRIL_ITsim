@@ -421,6 +421,8 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
 
                                 auto adc_val = adc_data_pixel_map.find(std::make_pair(x,y));
 
+                                std::cout << (int)x << " " << (int)y << " " << adc_val->second << std::endl;
+
                                 if(adc_val != adc_data_pixel_map.end()) {
                                     m_event.fillDigis((int)y, (int)x, adc_val->second);
                                 
