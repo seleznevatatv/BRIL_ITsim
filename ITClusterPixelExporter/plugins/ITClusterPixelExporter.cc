@@ -383,7 +383,7 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                 for (edm::DetSet<PixelDigi>::const_iterator digit = DSVit->begin(); digit != DSVit->end(); digit++)
                 {
                     // m_event.fillDigis(digit->row(), digit->column(), digit->adc());
-                    std::cout << (int)digit->column() << " " << (int)digit->row() << " " << digit->adc() << std::endl;
+                    // std::cout << (int)digit->column() << " " << (int)digit->row() << " " << digit->adc() << std::endl;
 
                     adc_data_pixel_map[std::make_pair(digit->column(), digit->row())] = digit->adc();
                 }
@@ -425,14 +425,14 @@ void ITClusterPixelExporter::analyze(const edm::Event& iEvent, const edm::EventS
                                 uint16_t y = pix.y;
                                 uint64_t adc = pix.adc;
 
-                                auto adc_val = adc_data_pixel_map.find(std::make_pair(x,y));
+                                auto adc_val = adc_data_pixel_map.find(std::make_pair(y,x));
 
-                                std::cout << (int)x << " " << (int)y << " " << adc_val->second << std::endl;
+                                // std::cout << (int)x << " " << (int)y << " " << adc_val->second << std::endl;
 
                                 if(adc_val != adc_data_pixel_map.end()) {
                                     m_event.fillDigis((int)y, (int)x, adc_val->second);
 
-                                    std::cout << (int)x << " " << (int)y << " " << adc_val->second << std::endl;
+                                    // std::cout << (int)x << " " << (int)y << " " << adc_val->second << std::endl;
                                 }
                                 //uint64_t dead = 0xDEAD;>
                                 //int tmp = x << 48 | y << 32 | adc << 16 | dead;
